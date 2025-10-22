@@ -901,9 +901,9 @@ function setupEventListeners() {
 
 // Additional utility functions
 function reloadWeapon() {
-    if (gameState.gameOver || gameState.ammo === gameState.maxAmmo) return;
+    if (gameState.gameOver) return;
     
-    gameState.ammo = gameState.maxAmmo;
+    // Show reload notification even with infinite ammo
     showNotification('Weapon Reloaded!', 2000);
     if (sounds.powerUp) sounds.powerUp();
 }
