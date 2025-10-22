@@ -1487,8 +1487,8 @@ window.testRestart = function() {
     alert('Restart button is working!');
 };
 
-// Initialize when page loads
-document.addEventListener('DOMContentLoaded', init);
+// Initialize when page loads - REMOVED for story intro
+// document.addEventListener('DOMContentLoaded', init);
 
 
 // Map configurations
@@ -1662,5 +1662,5 @@ function cleanupGame() {
     }
 }
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', init);
+// Initialize when DOM is loaded - REMOVED for story intro
+// document.addEventListener('DOMContentLoaded', init);

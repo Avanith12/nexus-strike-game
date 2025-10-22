@@ -6,6 +6,9 @@
     <title>NEXUS STRIKE - Advanced 3D Space Combat</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="shortcut icon" type="image/png" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* Z-Index Scale:
          * 1000+ = Modals, overlays
@@ -52,14 +55,15 @@
         }
 
         .logo {
+            font-family: 'Orbitron', monospace;
             font-size: 24px;
-            font-weight: bold;
+            font-weight: 900;
             background: linear-gradient(45deg, #00ff00, #00ffff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
         }
 
         .nav-buttons {
@@ -115,6 +119,117 @@
         /* Space Shooter Styles */
         #spaceShooter {
             background: linear-gradient(45deg, #0a0a0a, #1a1a2e, #16213e);
+        }
+
+        /* Story Intro Styles */
+        .story-intro {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            overflow: hidden;
+        }
+
+        .story-content {
+            text-align: center;
+            max-width: 800px;
+            padding: 40px;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .story-content h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 4.5rem;
+            font-weight: 900;
+            color: #00ffff;
+            text-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff, 0 0 90px #00ffff;
+            margin-bottom: 40px;
+            animation: glow 2s ease-in-out infinite alternate;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .story-text {
+            margin-bottom: 50px;
+        }
+
+        .story-line {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 500;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: typewriter 0.8s ease-out forwards;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            letter-spacing: 1px;
+        }
+
+        .story-line:nth-child(1) { animation-delay: 1s; }
+        .story-line:nth-child(2) { animation-delay: 2.5s; }
+        .story-line:nth-child(3) { animation-delay: 4s; }
+        .story-line:nth-child(4) { animation-delay: 5.5s; }
+        .story-line:nth-child(5) { animation-delay: 7s; }
+
+        #startGameBtn {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.6rem;
+            font-weight: 700;
+            padding: 18px 45px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            opacity: 0;
+            animation: fadeInUp 1s ease-out 8.5s forwards;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        #startGameBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(255, 107, 107, 0.8);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes typewriter {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff, 0 0 90px #00ffff;
+            }
+            to {
+                text-shadow: 0 0 40px #00ffff, 0 0 80px #00ffff, 0 0 120px #00ffff, 0 0 160px #00ffff;
+            }
         }
 
         #spaceShooter #gameContainer {
@@ -682,7 +797,22 @@
     <div class="main-content">
         <!-- Space Shooter Game -->
         <div id="spaceShooter" class="project-section active">
-            <div id="gameContainer">
+            <!-- Story Intro -->
+            <div id="storyIntro" class="story-intro">
+                <div class="story-content">
+                    <h1>NEXUS STRIKE</h1>
+                    <div class="story-text">
+                        <p class="story-line">In the year 2157, humanity has expanded across the galaxy...</p>
+                        <p class="story-line">But now, an ancient alien threat has awakened from the depths of space.</p>
+                        <p class="story-line">As Commander of the NEXUS fleet, you must defend our colonies...</p>
+                        <p class="story-line">Navigate through hostile environments, collect power-ups, and survive!</p>
+                        <p class="story-line">The fate of humanity rests in your hands...</p>
+                    </div>
+                    <button id="startGameBtn" onclick="startGame()">BEGIN MISSION</button>
+                </div>
+            </div>
+            
+            <div id="gameContainer" style="display: none;">
                 <div id="ui">
                     <div id="hud">
                         <div id="score">Score: 0</div>
@@ -793,6 +923,19 @@
             // Reinitialize the project if needed
             if (projectId === 'spaceShooter') {
                 // Space shooter will auto-initialize
+            }
+        }
+
+        function startGame() {
+            // Hide story intro
+            document.getElementById('storyIntro').style.display = 'none';
+            
+            // Show game container
+            document.getElementById('gameContainer').style.display = 'block';
+            
+            // Initialize the game
+            if (typeof init === 'function') {
+                init();
             }
         }
         
