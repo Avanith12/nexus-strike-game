@@ -65,17 +65,17 @@ function init() {
     try {
         // Initialize audio context
         initAudio();
-        
-        // Create scene
-        scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x000011);
-        scene.fog = new THREE.Fog(0x000011, 50, 200);
-        
-        // Add enhanced starfield
-        createEnhancedStarField();
-        
-        // Create camera
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    
+    // Create scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000011);
+    scene.fog = new THREE.Fog(0x000011, 50, 200);
+    
+    // Add enhanced starfield
+    createEnhancedStarField();
+    
+    // Create camera
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(0, 8, 15);
         
         // Create renderer with advanced settings
@@ -83,13 +83,13 @@ function init() {
             antialias: true,
             powerPreference: 'high-performance'
         });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.2;
-        
-        // Add renderer to container
+    
+    // Add renderer to container
         const gameContainer = document.getElementById('gameContainer');
         if (!gameContainer) {
             throw new Error('Game container not found');
@@ -97,26 +97,26 @@ function init() {
         gameContainer.appendChild(renderer.domElement);
         
         // Add orbit controls for free camera mode
-        controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
         controls.maxPolarAngle = Math.PI; // Allow full vertical rotation
         controls.minDistance = 3;
         controls.maxDistance = 50;
         controls.enablePan = true; // Allow panning
         controls.enableZoom = true; // Allow zooming
-        
-        // Add enhanced lighting
-        setupEnhancedLighting();
-        
-        // Create enhanced player ship
-        createEnhancedPlayer();
+    
+    // Add enhanced lighting
+    setupEnhancedLighting();
+    
+    // Create enhanced player ship
+        createModernPlayer();
         
         // Initialize minimap
         initMinimap();
-        
-        // Setup event listeners
-        setupEventListeners();
+    
+    // Setup event listeners
+    setupEventListeners();
         
         // Add some initial power-ups for immediate visibility
         const initialPowerUpTimer = setTimeout(() => {
@@ -126,9 +126,9 @@ function init() {
             createPowerUp('shield');
         }, 1000);
         gameTimers.push(initialPowerUpTimer);
-        
-        // Start game loop
-        gameLoop();
+    
+    // Start game loop
+    gameLoop();
     } catch (error) {
         console.error('Failed to initialize game:', error);
         showNotification('Game initialization failed. Please refresh the page.', 5000);
@@ -448,6 +448,128 @@ function setupEnhancedLighting() {
     const rimLight = new THREE.DirectionalLight(0x88ccff, 0.3);
     rimLight.position.set(0, 0, -20);
     scene.add(rimLight);
+}
+
+function createModernPlayer() {
+    const playerGroup = new THREE.Group();
+    
+    // Main ship body - sleek fuselage
+    const fuselageGeometry = new THREE.CylinderGeometry(0.3, 0.6, 2.5, 8);
+    const fuselageMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x00aaff, 
+        emissive: 0x002244,
+        emissiveIntensity: 0.4,
+        shininess: 100
+    });
+    const fuselage = new THREE.Mesh(fuselageGeometry, fuselageMaterial);
+    fuselage.rotation.z = Math.PI / 2;
+    fuselage.castShadow = true;
+    fuselage.receiveShadow = true;
+    playerGroup.add(fuselage);
+    
+    // Cockpit - glass dome
+    const cockpitGeometry = new THREE.SphereGeometry(0.4, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2);
+    const cockpitMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x88ccff, 
+        transparent: true, 
+        opacity: 0.7,
+        emissive: 0x001122,
+        emissiveIntensity: 0.2
+    });
+    const cockpit = new THREE.Mesh(cockpitGeometry, cockpitMaterial);
+    cockpit.position.set(0, 0.3, 0);
+    cockpit.castShadow = true;
+    cockpit.receiveShadow = true;
+    playerGroup.add(cockpit);
+    
+    // Wings - swept back design
+    const wingGeometry = new THREE.BoxGeometry(1.2, 0.1, 0.8);
+    const wingMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x0066cc, 
+        emissive: 0x001133,
+        emissiveIntensity: 0.3
+    });
+    
+    const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+    leftWing.position.set(-0.8, 0, -0.3);
+    leftWing.rotation.z = -0.2;
+    leftWing.castShadow = true;
+    leftWing.receiveShadow = true;
+    playerGroup.add(leftWing);
+    
+    const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+    rightWing.position.set(0.8, 0, -0.3);
+    rightWing.rotation.z = 0.2;
+    rightWing.castShadow = true;
+    rightWing.receiveShadow = true;
+    playerGroup.add(rightWing);
+    
+    // Missile launchers - visible tubes
+    const launcherGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.6, 8);
+    const launcherMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x333333, 
+        emissive: 0x111111,
+        emissiveIntensity: 0.2
+    });
+    
+    const leftLauncher = new THREE.Mesh(launcherGeometry, launcherMaterial);
+    leftLauncher.position.set(-0.4, 0, 1.2);
+    leftLauncher.rotation.z = Math.PI / 2;
+    leftLauncher.castShadow = true;
+    leftLauncher.receiveShadow = true;
+    playerGroup.add(leftLauncher);
+    
+    const rightLauncher = new THREE.Mesh(launcherGeometry, launcherMaterial);
+    rightLauncher.position.set(0.4, 0, 1.2);
+    rightLauncher.rotation.z = Math.PI / 2;
+    rightLauncher.castShadow = true;
+    rightLauncher.receiveShadow = true;
+    playerGroup.add(rightLauncher);
+    
+    // Engine exhaust ports
+    const engineGeometry = new THREE.CylinderGeometry(0.15, 0.2, 0.4, 8);
+    const engineMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x444444, 
+        emissive: 0x222222,
+        emissiveIntensity: 0.3
+    });
+    
+    const leftEngine = new THREE.Mesh(engineGeometry, engineMaterial);
+    leftEngine.position.set(-0.3, 0, -1.3);
+    leftEngine.castShadow = true;
+    leftEngine.receiveShadow = true;
+    playerGroup.add(leftEngine);
+    
+    const rightEngine = new THREE.Mesh(engineGeometry, engineMaterial);
+    rightEngine.position.set(0.3, 0, -1.3);
+    rightEngine.castShadow = true;
+    rightEngine.receiveShadow = true;
+    playerGroup.add(rightEngine);
+    
+    // Navigation lights
+    const lightGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+    const redLightMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xff0000, 
+        emissive: 0xff0000,
+        emissiveIntensity: 0.8
+    });
+    const greenLightMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x00ff00,
+        emissive: 0x00ff00,
+        emissiveIntensity: 0.8
+    });
+    
+    const leftLight = new THREE.Mesh(lightGeometry, redLightMaterial);
+    leftLight.position.set(-0.6, 0.2, 0.5);
+    playerGroup.add(leftLight);
+    
+    const rightLight = new THREE.Mesh(lightGeometry, greenLightMaterial);
+    rightLight.position.set(0.6, 0.2, 0.5);
+    playerGroup.add(rightLight);
+    
+    player = playerGroup;
+    player.position.set(0, 0, 0);
+    scene.add(player);
 }
 
 function createEnhancedPlayer() {
@@ -1114,6 +1236,20 @@ function reloadWeapon() {
 
 function togglePause() {
     gameState.paused = !gameState.paused;
+    
+    // Handle music pause/resume
+    if (musicGainNode) {
+        if (gameState.paused) {
+            // Pause music by setting gain to 0
+            musicGainNode.gain.setValueAtTime(musicGainNode.gain.value, audioContext.currentTime);
+            musicGainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+        } else {
+            // Resume music by restoring gain
+            musicGainNode.gain.setValueAtTime(0.001, audioContext.currentTime);
+            musicGainNode.gain.exponentialRampToValueAtTime(gameSettings.soundEnabled ? 0.2 : 0.001, audioContext.currentTime + 0.1);
+        }
+    }
+    
     showNotification(gameState.paused ? 'Game Paused' : 'Game Resumed', 1500);
 }
 
@@ -1122,7 +1258,17 @@ function toggleMute() {
     musicEnabled = gameSettings.soundEnabled;
     
     if (musicGainNode) {
-        musicGainNode.gain.value = gameSettings.soundEnabled ? 0.2 : 0;
+        // Smooth transition for music
+        musicGainNode.gain.setValueAtTime(musicGainNode.gain.value, audioContext.currentTime);
+        musicGainNode.gain.exponentialRampToValueAtTime(
+            gameSettings.soundEnabled ? 0.2 : 0.001, 
+            audioContext.currentTime + 0.2
+        );
+    }
+    
+    // Handle audio context state
+    if (gameSettings.soundEnabled && audioContext && audioContext.state === 'suspended') {
+        audioContext.resume().catch(e => console.log('Audio resume failed:', e));
     }
     
     showNotification(gameSettings.soundEnabled ? 'Sound On' : 'Sound Off', 1500);
@@ -1235,7 +1381,12 @@ function updatePlayer() {
         gameState.invulnerableTime -= 16;
         if (gameState.invulnerableTime <= 0) {
             gameState.invulnerable = false;
-            player.material.opacity = 1;
+            // Reset opacity for all player materials
+            player.traverse((child) => {
+                if (child.material && child.material.opacity !== undefined) {
+                    child.material.opacity = 1;
+                }
+            });
             removeShieldEffect();
         } else {
             // Update shield effect position
@@ -1243,8 +1394,13 @@ function updatePlayer() {
                 shieldEffect.position.copy(player.position);
                 shieldEffect.rotation.y += 0.05;
             }
-            // Blinking effect
-            player.material.opacity = Math.sin(Date.now() * 0.01) * 0.5 + 0.5;
+            // Blinking effect for all player materials
+            const blinkOpacity = Math.sin(Date.now() * 0.01) * 0.5 + 0.5;
+            player.traverse((child) => {
+                if (child.material && child.material.opacity !== undefined) {
+                    child.material.opacity = blinkOpacity;
+                }
+            });
         }
     }
 }
@@ -1659,8 +1815,17 @@ function restartGame() {
     
     // Reset player
     player.position.set(0, 0, 0);
-    player.material.opacity = 1;
-    player.material.emissive.setHex(0x004400);
+    // Reset all player materials
+    player.traverse((child) => {
+        if (child.material) {
+            if (child.material.opacity !== undefined) {
+                child.material.opacity = 1;
+            }
+            if (child.material.emissive) {
+                child.material.emissive.setHex(0x004400);
+            }
+        }
+    });
     
     // Hide game over screen
     document.getElementById('gameOver').style.display = 'none';
@@ -1675,13 +1840,13 @@ function restartGame() {
 function gameLoop() {
     try {
         if (!gameState.gameOver && !gameState.paused) {
-            updatePlayer();
-            updateEnemies();
-            updatePowerUps();
-            updateBullets();
-            updateParticles();
+        updatePlayer();
+        updateEnemies();
+        updatePowerUps();
+        updateBullets();
+        updateParticles();
             updateCombo();
-            updateUI();
+        updateUI();
             updateMinimap();
             updateCamera();
             
@@ -1691,17 +1856,17 @@ function gameLoop() {
                     child.rotation.y += child.userData.rotationSpeed;
                 }
             });
-        }
-        
-        // Update controls
+    }
+    
+    // Update controls
         if (cameraMode === 'free') {
-            controls.update();
+    controls.update();
         }
-        
-        // Render
-        renderer.render(scene, camera);
-        
-        // Continue loop
+    
+    // Render
+    renderer.render(scene, camera);
+    
+    // Continue loop
         animationId = requestAnimationFrame(gameLoop);
     } catch (error) {
         console.error('Game loop error:', error);
