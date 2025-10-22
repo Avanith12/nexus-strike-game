@@ -1,0 +1,45 @@
+{
+  "name": "advanced-threejs-graphics",
+  "version": "2.0.0",
+  "description": "Advanced Three.js graphics projects featuring 3D games, interactive scenes, and cutting-edge WebGL demos",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "python3 -m http.server 8000",
+    "lint": "eslint *.js",
+    "format": "prettier --write *.js *.html *.css"
+  },
+  "keywords": [
+    "threejs",
+    "webgl",
+    "3d-graphics",
+    "game-development",
+    "interactive-3d",
+    "javascript",
+    "computer-graphics",
+    "visualization"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0"
+  },
+  "dependencies": {
+    "three": "^0.158.0",
+    "cannon-es": "^0.20.0",
+    "dat.gui": "^0.7.9",
+    "stats.js": "^0.17.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Avanith12/nexus-strike-game.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Avanith12/nexus-strike-game/issues"
+  },
+  "homepage": "https://Avanith12.github.io/nexus-strike-game/"
+}
