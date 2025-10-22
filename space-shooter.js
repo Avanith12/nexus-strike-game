@@ -750,7 +750,7 @@ function createEnemy(type = 'basic') {
             size: 0.8, 
             health: 1, 
             speed: 0.02,
-            shape: 'cone'
+            shape: 'fighter'
         },
         fast: { 
             color: 0xff4500, 
@@ -758,7 +758,7 @@ function createEnemy(type = 'basic') {
             size: 0.6, 
             health: 1, 
             speed: 0.04,
-            shape: 'octahedron'
+            shape: 'interceptor'
         },
         heavy: { 
             color: 0x4b0082, 
@@ -766,7 +766,7 @@ function createEnemy(type = 'basic') {
             size: 1.2, 
             health: 3, 
             speed: 0.015,
-            shape: 'box'
+            shape: 'bomber'
         },
         boss: { 
             color: 0x8b008b, 
@@ -774,38 +774,14 @@ function createEnemy(type = 'basic') {
             size: 2.0, 
             health: 10, 
             speed: 0.01,
-            shape: 'complex'
+            shape: 'destroyer'
         }
     };
     
     const config = enemyTypes[type] || enemyTypes.basic;
     
-    let geometry, material;
-    
-    switch(config.shape) {
-        case 'cone':
-            geometry = new THREE.ConeGeometry(config.size, config.size * 2, 12);
-            break;
-        case 'octahedron':
-            geometry = new THREE.OctahedronGeometry(config.size);
-            break;
-        case 'box':
-            geometry = new THREE.BoxGeometry(config.size, config.size, config.size);
-            break;
-        case 'complex':
-            // Create a more complex boss shape
-            geometry = new THREE.ConeGeometry(config.size, config.size * 1.5, 16);
-            break;
-    }
-    
-    material = new THREE.MeshPhongMaterial({ 
-        color: config.color,
-        emissive: config.emissive,
-        shininess: 50,
-        specular: 0x222222
-    });
-    
-    const enemy = new THREE.Mesh(geometry, material);
+    // Create modern enemy ship
+    const enemy = createModernEnemyShip(config.shape, config);
     
     // Random position
     enemy.position.set(
@@ -874,6 +850,314 @@ function createEnemy(type = 'basic') {
     
     scene.add(enemy);
     enemies.push(enemy);
+}
+
+function createModernEnemyShip(shipType, config) {
+    const enemyGroup = new THREE.Group();
+    
+    switch(shipType) {
+        case 'fighter':
+            return createEnemyFighter(enemyGroup, config);
+        case 'interceptor':
+            return createEnemyInterceptor(enemyGroup, config);
+        case 'bomber':
+            return createEnemyBomber(enemyGroup, config);
+        case 'destroyer':
+            return createEnemyDestroyer(enemyGroup, config);
+        default:
+            return createEnemyFighter(enemyGroup, config);
+    }
+}
+
+function createEnemyFighter(group, config) {
+    // Main body - aggressive angular design
+    const bodyGeometry = new THREE.ConeGeometry(config.size * 0.4, config.size * 1.5, 6);
+    const bodyMaterial = new THREE.MeshPhongMaterial({ 
+        color: config.color, 
+        emissive: config.emissive,
+        emissiveIntensity: 0.4,
+        shininess: 80
+    });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.rotation.z = Math.PI / 2;
+    body.castShadow = true;
+    body.receiveShadow = true;
+    group.add(body);
+    
+    // Wings - sharp and angular
+    const wingGeometry = new THREE.BoxGeometry(config.size * 0.8, 0.05, config.size * 0.4);
+    const wingMaterial = new THREE.MeshPhongMaterial({ 
+        color: config.color * 0.8, 
+        emissive: config.emissive * 0.8,
+        emissiveIntensity: 0.3
+    });
+    
+    const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+    leftWing.position.set(-config.size * 0.3, 0, 0);
+    leftWing.castShadow = true;
+    group.add(leftWing);
+    
+    const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+    rightWing.position.set(config.size * 0.3, 0, 0);
+    rightWing.castShadow = true;
+    group.add(rightWing);
+    
+    // Weapon pods
+    const weaponGeometry = new THREE.CylinderGeometry(0.05, 0.05, config.size * 0.3, 6);
+    const weaponMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x666666, 
+        emissive: 0x333333,
+        emissiveIntensity: 0.2
+    });
+    
+    const leftWeapon = new THREE.Mesh(weaponGeometry, weaponMaterial);
+    leftWeapon.position.set(-config.size * 0.2, 0, config.size * 0.6);
+    leftWeapon.rotation.z = Math.PI / 2;
+    group.add(leftWeapon);
+    
+    const rightWeapon = new THREE.Mesh(weaponGeometry, weaponMaterial);
+    rightWeapon.position.set(config.size * 0.2, 0, config.size * 0.6);
+    rightWeapon.rotation.z = Math.PI / 2;
+    group.add(rightWeapon);
+    
+    // Engine glow
+    const engineGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+    const engineMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xff6600, 
+        emissive: 0xff3300,
+        emissiveIntensity: 0.8
+    });
+    
+    const leftEngine = new THREE.Mesh(engineGeometry, engineMaterial);
+    leftEngine.position.set(-config.size * 0.2, 0, -config.size * 0.7);
+    group.add(leftEngine);
+    
+    const rightEngine = new THREE.Mesh(engineGeometry, engineMaterial);
+    rightEngine.position.set(config.size * 0.2, 0, -config.size * 0.7);
+    group.add(rightEngine);
+    
+    return group;
+}
+
+function createEnemyInterceptor(group, config) {
+    // Sleek, fast design
+    const bodyGeometry = new THREE.CylinderGeometry(config.size * 0.2, config.size * 0.3, config.size * 1.2, 8);
+    const bodyMaterial = new THREE.MeshPhongMaterial({ 
+        color: config.color, 
+        emissive: config.emissive,
+        emissiveIntensity: 0.5,
+        shininess: 100
+    });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.rotation.z = Math.PI / 2;
+    body.castShadow = true;
+    body.receiveShadow = true;
+    group.add(body);
+    
+    // Swept wings
+    const wingGeometry = new THREE.BoxGeometry(config.size * 0.6, 0.03, config.size * 0.2);
+    const wingMaterial = new THREE.MeshPhongMaterial({ 
+        color: config.color * 0.9, 
+        emissive: config.emissive * 0.9,
+        emissiveIntensity: 0.4
+    });
+    
+    const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+    leftWing.position.set(-config.size * 0.25, 0, -config.size * 0.2);
+    leftWing.rotation.z = -0.3;
+    group.add(leftWing);
+    
+    const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+    rightWing.position.set(config.size * 0.25, 0, -config.size * 0.2);
+    rightWing.rotation.z = 0.3;
+    group.add(rightWing);
+    
+    // Twin engines
+    const engineGeometry = new THREE.CylinderGeometry(0.08, 0.12, config.size * 0.4, 8);
+    const engineMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xff8800, 
+        emissive: 0xff4400,
+        emissiveIntensity: 0.9
+    });
+    
+    const leftEngine = new THREE.Mesh(engineGeometry, engineMaterial);
+    leftEngine.position.set(-config.size * 0.15, 0, -config.size * 0.8);
+    group.add(leftEngine);
+    
+    const rightEngine = new THREE.Mesh(engineGeometry, engineMaterial);
+    rightEngine.position.set(config.size * 0.15, 0, -config.size * 0.8);
+    group.add(rightEngine);
+    
+    return group;
+}
+
+function createEnemyBomber(group, config) {
+    // Heavy, intimidating design
+    const bodyGeometry = new THREE.BoxGeometry(config.size * 0.6, config.size * 0.4, config.size * 1.8);
+    const bodyMaterial = new THREE.MeshPhongMaterial({ 
+        color: config.color, 
+        emissive: config.emissive,
+        emissiveIntensity: 0.3,
+        shininess: 60
+    });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.castShadow = true;
+    body.receiveShadow = true;
+    group.add(body);
+    
+    // Large wings
+    const wingGeometry = new THREE.BoxGeometry(config.size * 1.2, 0.08, config.size * 0.6);
+    const wingMaterial = new THREE.MeshPhongMaterial({ 
+        color: config.color * 0.7, 
+        emissive: config.emissive * 0.7,
+        emissiveIntensity: 0.2
+    });
+    
+    const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+    leftWing.position.set(-config.size * 0.4, 0, 0);
+    leftWing.castShadow = true;
+    group.add(leftWing);
+    
+    const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+    rightWing.position.set(config.size * 0.4, 0, 0);
+    rightWing.castShadow = true;
+    group.add(rightWing);
+    
+    // Multiple engines
+    const engineGeometry = new THREE.CylinderGeometry(0.1, 0.15, config.size * 0.5, 8);
+    const engineMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xffaa00, 
+        emissive: 0xff5500,
+        emissiveIntensity: 0.7
+    });
+    
+    const engines = [
+        [-config.size * 0.3, 0, -config.size * 0.9],
+        [config.size * 0.3, 0, -config.size * 0.9],
+        [-config.size * 0.15, 0, -config.size * 1.1],
+        [config.size * 0.15, 0, -config.size * 1.1]
+    ];
+    
+    engines.forEach(pos => {
+        const engine = new THREE.Mesh(engineGeometry, engineMaterial);
+        engine.position.set(pos[0], pos[1], pos[2]);
+        group.add(engine);
+    });
+    
+    // Weapon turrets
+    const turretGeometry = new THREE.CylinderGeometry(0.08, 0.08, config.size * 0.3, 8);
+    const turretMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x444444, 
+        emissive: 0x222222,
+        emissiveIntensity: 0.3
+    });
+    
+    const leftTurret = new THREE.Mesh(turretGeometry, turretMaterial);
+    leftTurret.position.set(-config.size * 0.2, config.size * 0.1, config.size * 0.7);
+    group.add(leftTurret);
+    
+    const rightTurret = new THREE.Mesh(turretGeometry, turretMaterial);
+    rightTurret.position.set(config.size * 0.2, config.size * 0.1, config.size * 0.7);
+    group.add(rightTurret);
+    
+    return group;
+}
+
+function createEnemyDestroyer(group, config) {
+    // Massive, menacing boss ship
+    const bodyGeometry = new THREE.ConeGeometry(config.size * 0.8, config.size * 2.5, 12);
+    const bodyMaterial = new THREE.MeshPhongMaterial({ 
+        color: config.color, 
+        emissive: config.emissive,
+        emissiveIntensity: 0.4,
+        shininess: 90
+    });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.rotation.z = Math.PI / 2;
+    body.castShadow = true;
+    body.receiveShadow = true;
+    group.add(body);
+    
+    // Multiple wing sections
+    const wingGeometry = new THREE.BoxGeometry(config.size * 1.5, 0.1, config.size * 0.8);
+    const wingMaterial = new THREE.MeshPhongMaterial({ 
+        color: config.color * 0.8, 
+        emissive: config.emissive * 0.8,
+        emissiveIntensity: 0.3
+    });
+    
+    const wings = [
+        [-config.size * 0.6, 0, -config.size * 0.3],
+        [config.size * 0.6, 0, -config.size * 0.3],
+        [-config.size * 0.4, 0, config.size * 0.2],
+        [config.size * 0.4, 0, config.size * 0.2]
+    ];
+    
+    wings.forEach(pos => {
+        const wing = new THREE.Mesh(wingGeometry, wingMaterial);
+        wing.position.set(pos[0], pos[1], pos[2]);
+        wing.castShadow = true;
+        group.add(wing);
+    });
+    
+    // Multiple weapon systems
+    const weaponGeometry = new THREE.CylinderGeometry(0.12, 0.12, config.size * 0.4, 8);
+    const weaponMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x555555, 
+        emissive: 0x333333,
+        emissiveIntensity: 0.4
+    });
+    
+    const weapons = [
+        [-config.size * 0.3, 0, config.size * 1.0],
+        [config.size * 0.3, 0, config.size * 1.0],
+        [-config.size * 0.5, 0, config.size * 0.5],
+        [config.size * 0.5, 0, config.size * 0.5],
+        [0, 0, config.size * 1.2]
+    ];
+    
+    weapons.forEach(pos => {
+        const weapon = new THREE.Mesh(weaponGeometry, weaponMaterial);
+        weapon.position.set(pos[0], pos[1], pos[2]);
+        weapon.rotation.z = Math.PI / 2;
+        group.add(weapon);
+    });
+    
+    // Massive engines
+    const engineGeometry = new THREE.CylinderGeometry(0.2, 0.3, config.size * 0.8, 12);
+    const engineMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xff6600, 
+        emissive: 0xff3300,
+        emissiveIntensity: 1.0
+    });
+    
+    const engines = [
+        [-config.size * 0.4, 0, -config.size * 1.2],
+        [config.size * 0.4, 0, -config.size * 1.2],
+        [-config.size * 0.2, 0, -config.size * 1.5],
+        [config.size * 0.2, 0, -config.size * 1.5]
+    ];
+    
+    engines.forEach(pos => {
+        const engine = new THREE.Mesh(engineGeometry, engineMaterial);
+        engine.position.set(pos[0], pos[1], pos[2]);
+        group.add(engine);
+    });
+    
+    // Command bridge
+    const bridgeGeometry = new THREE.SphereGeometry(config.size * 0.3, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2);
+    const bridgeMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x88ccff, 
+        transparent: true, 
+        opacity: 0.6,
+        emissive: 0x001122,
+        emissiveIntensity: 0.3
+    });
+    const bridge = new THREE.Mesh(bridgeGeometry, bridgeMaterial);
+    bridge.position.set(0, config.size * 0.2, config.size * 0.3);
+    group.add(bridge);
+    
+    return group;
 }
 
 function createPowerUp(type) {
@@ -1339,8 +1623,12 @@ function activateBoost() {
     gameState.boostActive = true;
     gameState.boostTime = gameSettings.boostDuration;
     
-    // Visual effect
-    player.material.emissive.setHex(0x00ff00);
+    // Visual effect - update all player materials
+    player.traverse((child) => {
+        if (child.material && child.material.emissive) {
+            child.material.emissive.setHex(0x00ff00);
+        }
+    });
     
     showNotification('Boost Activated!', 2000);
     if (sounds.powerUp) sounds.powerUp();
@@ -1372,7 +1660,21 @@ function updatePlayer() {
         gameState.boostTime -= 16; // ~60fps
         if (gameState.boostTime <= 0) {
             gameState.boostActive = false;
-            player.material.emissive.setHex(0x004400);
+            // Reset all player materials to original colors
+            player.traverse((child) => {
+                if (child.material && child.material.emissive) {
+                    // Reset to original emissive colors based on ship part
+                    if (child.material.color && child.material.color.getHex() === 0x00aaff) {
+                        child.material.emissive.setHex(0x002244); // Fuselage
+                    } else if (child.material.color && child.material.color.getHex() === 0x0066cc) {
+                        child.material.emissive.setHex(0x001133); // Wings
+                    } else if (child.material.color && child.material.color.getHex() === 0x88ccff) {
+                        child.material.emissive.setHex(0x001122); // Cockpit
+                    } else {
+                        child.material.emissive.setHex(0x000000); // Default
+                    }
+                }
+            });
         }
     }
     
