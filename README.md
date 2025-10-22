@@ -86,6 +86,22 @@ A professional-grade 3D space shooter game built with Three.js, featuring advanc
 - **Statistics Tracking** - Accuracy, enemies destroyed, level progression
 - **Pause/Resume** - Smooth game state management
 
+## Development Status
+
+🚧 **This project is actively under development!** 
+
+I'm continuously working on adding new features, improving gameplay, and enhancing the overall experience. Some upcoming features I'm planning include:
+
+- **New enemy types** with unique behaviors and designs
+- **Additional power-ups** and weapon systems
+- **More environments** and map variations
+- **Enhanced visual effects** and particle systems
+- **Improved audio** with more dynamic music variations
+- **Performance optimizations** for better gameplay
+- **Mobile support** for touch controls
+
+**Stay tuned for updates!** ⭐
+
 ## Quick Start
 
 ### Development Server
@@ -235,6 +251,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [WebGL](https://www.khronos.org/webgl/) - Web graphics standard
 - [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API) - Browser audio synthesis
 - [MDN Web Docs](https://developer.mozilla.org/) - Excellent documentation
+- [Google Fonts](https://fonts.google.com/) - Orbitron and Rajdhani fonts for gaming aesthetics
+- [VS Code Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) - Development server extension
+- [GitHub](https://github.com/) - Version control and project hosting
+- [MIT License](https://opensource.org/licenses/MIT) - Open source licensing
 
 ## Contact
 
