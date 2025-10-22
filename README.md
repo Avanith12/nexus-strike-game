@@ -61,19 +61,6 @@ php -S localhost:8000
 
 Then open `http://localhost:8000/index.html` in your browser.
 
-## Deployment
-
-### GitHub Pages (Recommended)
-1. Push your code to a GitHub repository
-2. Go to repository **Settings** → **Pages**
-3. Select **Deploy from a branch** → **main** → **/ (root)**
-4. Your game will be live at `https://yourusername.github.io/repository-name/`
-
-### Other Hosting Options
-- **Netlify** - Drag & drop deployment
-- **Vercel** - Automatic deployments from GitHub
-- **Surge.sh** - Simple command-line deployment
-
 ## Technologies Used
 
 ### Core Technologies
