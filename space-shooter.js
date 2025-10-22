@@ -5,7 +5,7 @@ let scene, camera, renderer, controls;
 let player, enemies = [], bullets = [], enemyBullets = [], powerUps = [], particles = [], shieldEffect = null;
 let keys = {};
 let minimapCanvas, minimapCtx;
-let audioContext, sounds = {};
+let audioContext, sounds = {}, backgroundMusic = null, musicGainNode = null;
 let cameraMode = 'follow'; // 'follow' or 'free'
 let cameraOffset = new THREE.Vector3(0, 8, 15);
 let cameraTarget = new THREE.Vector3();
@@ -14,6 +14,7 @@ let cameraTarget = new THREE.Vector3();
 let animationId = null;
 let gameTimers = [];
 let eventListeners = [];
+let currentMusicLevel = 1, musicEnabled = true;
 let gameState = {
     score: 0,
     health: 100,
@@ -139,12 +140,21 @@ function initAudio() {
     try {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         
+        // Create gain node for background music
+        musicGainNode = audioContext.createGain();
+        musicGainNode.connect(audioContext.destination);
+        musicGainNode.gain.value = 0.2; // Background music volume
+        
         // Create sound effects using Web Audio API
         sounds.shoot = createTone(800, 0.1, 'sine');
         sounds.explosion = createTone(200, 0.3, 'sawtooth');
         sounds.powerUp = createTone(1000, 0.2, 'square');
         sounds.hit = createTone(400, 0.15, 'triangle');
         sounds.levelUp = createTone(600, 0.5, 'sine');
+        
+        // Start background music
+        startBackgroundMusic();
+        
     } catch (e) {
         gameSettings.soundEnabled = false;
     }
@@ -170,6 +180,90 @@ function createTone(frequency, duration, type = 'sine') {
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + duration);
     };
+}
+
+// Create procedural background music
+function startBackgroundMusic() {
+    if (!audioContext || !musicEnabled) return;
+    
+    const playNote = (frequency, duration, startTime) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(musicGainNode);
+        
+        oscillator.frequency.setValueAtTime(frequency, startTime);
+        oscillator.type = 'sawtooth';
+        
+        // Create envelope
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(0.1, startTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration);
+    };
+    
+    const playChord = (frequencies, duration, startTime) => {
+        frequencies.forEach(freq => playNote(freq, duration, startTime));
+    };
+    
+    // Musical scales for different intensity levels
+    const scales = {
+        1: [220, 246.94, 277.18, 329.63, 369.99, 415.30, 466.16], // A minor - calm
+        2: [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88], // C major - building
+        3: [311.13, 349.23, 392.00, 440.00, 493.88, 523.25, 587.33], // E♭ major - intense
+        4: [329.63, 369.99, 415.30, 466.16, 523.25, 587.33, 659.25], // E minor - epic
+        5: [392.00, 440.00, 493.88, 523.25, 587.33, 659.25, 739.99], // G major - heroic
+        6: [466.16, 523.25, 587.33, 659.25, 739.99, 830.61, 932.33]  // B♭ major - ultimate
+    };
+    
+    const playMusicLoop = () => {
+        if (!musicEnabled) return;
+        
+        const currentTime = audioContext.currentTime;
+        const level = Math.min(gameState.level, 6);
+        const scale = scales[level] || scales[6];
+        
+        // Tempo increases with level (BPM: 120 + level * 20)
+        const tempo = 120 + (level - 1) * 20;
+        const beatDuration = 60 / tempo;
+        
+        // Create a musical phrase
+        const phraseLength = 8 * beatDuration;
+        
+        // Bass line (lower octave)
+        for (let i = 0; i < 8; i++) {
+            const noteTime = currentTime + i * beatDuration;
+            const noteIndex = i % 4; // Simple pattern
+            playNote(scale[noteIndex] * 0.5, beatDuration * 0.8, noteTime);
+        }
+        
+        // Melody (higher octave)
+        for (let i = 0; i < 8; i++) {
+            const noteTime = currentTime + i * beatDuration + beatDuration * 0.5;
+            const noteIndex = (i * 2) % scale.length;
+            playNote(scale[noteIndex] * 2, beatDuration * 0.6, noteTime);
+        }
+        
+        // Harmony chords
+        for (let i = 0; i < 4; i++) {
+            const noteTime = currentTime + i * beatDuration * 2;
+            const chordNotes = [
+                scale[i % scale.length],
+                scale[(i + 2) % scale.length],
+                scale[(i + 4) % scale.length]
+            ];
+            playChord(chordNotes, beatDuration * 1.5, noteTime);
+        }
+        
+        // Schedule next loop
+        setTimeout(playMusicLoop, phraseLength * 1000);
+    };
+    
+    // Start the music loop
+    playMusicLoop();
 }
 
 // Initialize minimap
@@ -1025,6 +1119,12 @@ function togglePause() {
 
 function toggleMute() {
     gameSettings.soundEnabled = !gameSettings.soundEnabled;
+    musicEnabled = gameSettings.soundEnabled;
+    
+    if (musicGainNode) {
+        musicGainNode.gain.value = gameSettings.soundEnabled ? 0.2 : 0;
+    }
+    
     showNotification(gameSettings.soundEnabled ? 'Sound On' : 'Sound Off', 1500);
 }
 
