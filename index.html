@@ -495,6 +495,58 @@
             border-radius: 8px;
         }
 
+        /* Power-up Info Panel */
+        .power-up-info {
+            position: absolute;
+            bottom: 80px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #ffffff;
+        }
+
+        .power-up-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-width: 35px;
+        }
+
+        .power-up-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .power-up-icon.health {
+            background: linear-gradient(45deg, #00ff00, #66ff66);
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
+        }
+
+        .power-up-icon.weapon {
+            background: linear-gradient(45deg, #0088ff, #66bbff);
+            box-shadow: 0 0 8px rgba(0, 136, 255, 0.5);
+        }
+
+        .power-up-icon.boost {
+            background: linear-gradient(45deg, #ffff00, #ffff66);
+            box-shadow: 0 0 8px rgba(255, 255, 0, 0.5);
+        }
+
+        .power-up-icon.shield {
+            background: linear-gradient(45deg, #00ffff, #66ffff);
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+        }
 
         #spaceShooter button {
             background: rgba(0, 0, 0, 0.9);
@@ -604,6 +656,23 @@
             #spaceShooter #minimap {
                 width: 150px;
                 height: 150px;
+            }
+
+            .power-up-info {
+                bottom: 70px;
+                right: 10px;
+                padding: 6px 8px;
+                gap: 8px;
+                font-size: 9px;
+            }
+
+            .power-up-item {
+                min-width: 30px;
+            }
+
+            .power-up-icon {
+                width: 14px;
+                height: 14px;
             }
         }
 
@@ -880,6 +949,26 @@
                             <p>• Collect power-ups to enhance your ship</p>
                             <p>• Destroy enemies to level up</p>
                             <p>• Camera follows spaceship automatically</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Power-up Info Panel -->
+                    <div id="powerUpInfo" class="power-up-info">
+                        <div class="power-up-item">
+                            <div class="power-up-icon health"></div>
+                            <span>Health</span>
+                        </div>
+                        <div class="power-up-item">
+                            <div class="power-up-icon weapon"></div>
+                            <span>Weapon</span>
+                        </div>
+                        <div class="power-up-item">
+                            <div class="power-up-icon boost"></div>
+                            <span>Boost</span>
+                        </div>
+                        <div class="power-up-item">
+                            <div class="power-up-icon shield"></div>
+                            <span>Shield</span>
                         </div>
                     </div>
                     
