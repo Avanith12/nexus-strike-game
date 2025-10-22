@@ -719,20 +719,91 @@ function createPowerUp(type) {
 
 function createBullet(startPos, direction, isPlayerBullet = true, bulletType = 'basic') {
     const bulletTypes = {
-        basic: { color: 0xffff00, size: 0.1, speed: 0.4 },
-        rapid: { color: 0x00ffff, size: 0.08, speed: 0.5 },
-        spread: { color: 0xff8800, size: 0.12, speed: 0.3 },
-        laser: { color: 0xff0088, size: 0.15, speed: 0.6 }
+        basic: { 
+            color: 0xffff00, 
+            size: 0.15, 
+            speed: 0.4, 
+            damage: 1,
+            shape: 'sphere',
+            emissiveIntensity: 0.3,
+            trail: false
+        },
+        rapid: { 
+            color: 0x00ffff, 
+            size: 0.12, 
+            speed: 0.5, 
+            damage: 1,
+            shape: 'sphere',
+            emissiveIntensity: 0.4,
+            trail: false
+        },
+        spread: { 
+            color: 0xff8800, 
+            size: 0.18, 
+            speed: 0.3, 
+            damage: 1,
+            shape: 'sphere',
+            emissiveIntensity: 0.5,
+            trail: false
+        },
+        laser: { 
+            color: 0xff0088, 
+            size: 0.25, 
+            speed: 0.6, 
+            damage: 2,
+            shape: 'cylinder',
+            emissiveIntensity: 0.6,
+            trail: true
+        },
+        plasma: { 
+            color: 0xff00ff, 
+            size: 0.3, 
+            speed: 0.4, 
+            damage: 3,
+            shape: 'octahedron',
+            emissiveIntensity: 0.8,
+            trail: true
+        },
+        energy: { 
+            color: 0x00ff00, 
+            size: 0.35, 
+            speed: 0.5, 
+            damage: 4,
+            shape: 'dodecahedron',
+            emissiveIntensity: 1.0,
+            trail: true
+        }
     };
     
     const config = bulletTypes[bulletType] || bulletTypes.basic;
     
-    const geometry = new THREE.SphereGeometry(config.size, 8, 8);
+    // Create different bullet shapes based on type
+    let geometry;
+    switch(config.shape) {
+        case 'sphere':
+            geometry = new THREE.SphereGeometry(config.size, 12, 12);
+            break;
+        case 'cylinder':
+            geometry = new THREE.CylinderGeometry(config.size * 0.5, config.size * 0.5, config.size * 2, 8);
+            break;
+        case 'octahedron':
+            geometry = new THREE.OctahedronGeometry(config.size);
+            break;
+        case 'dodecahedron':
+            geometry = new THREE.DodecahedronGeometry(config.size);
+            break;
+        default:
+            geometry = new THREE.SphereGeometry(config.size, 12, 12);
+    }
+    
     const material = new THREE.MeshPhongMaterial({ 
         color: config.color,
         emissive: config.color,
-        emissiveIntensity: 0.3
+        emissiveIntensity: config.emissiveIntensity,
+        transparent: true,
+        opacity: 0.9
     });
+    
     const bullet = new THREE.Mesh(geometry, material);
     
     bullet.position.copy(startPos);
@@ -740,8 +811,19 @@ function createBullet(startPos, direction, isPlayerBullet = true, bulletType = '
         direction: direction.clone(),
         speed: config.speed,
         isPlayerBullet: isPlayerBullet,
-        type: bulletType
+        damage: config.damage,
+        bulletType: bulletType,
+        trail: config.trail,
+        originalColor: config.color
     };
+    
+    bullet.castShadow = true;
+    bullet.receiveShadow = true;
+    
+    // Add bullet trail effect for advanced bullets
+    if (config.trail) {
+        addBulletTrail(bullet, config.color);
+    }
     
     scene.add(bullet);
     
@@ -750,6 +832,24 @@ function createBullet(startPos, direction, isPlayerBullet = true, bulletType = '
     } else {
         enemyBullets.push(bullet);
     }
+}
+
+function addBulletTrail(bullet, color) {
+    // Create a trail effect for advanced bullets
+    const trailGeometry = new THREE.CylinderGeometry(0.02, 0.05, 0.3, 6);
+    const trailMaterial = new THREE.MeshPhongMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.6,
+        emissive: color,
+        emissiveIntensity: 0.3
+    });
+    
+    const trail = new THREE.Mesh(trailGeometry, trailMaterial);
+    trail.position.copy(bullet.position);
+    trail.lookAt(bullet.position.clone().add(bullet.userData.direction));
+    bullet.userData.trail = trail;
+    scene.add(trail);
 }
 
 function createExplosion(position, size = 1) {
@@ -813,22 +913,32 @@ function shoot() {
     const direction = new THREE.Vector3(0, 0, -1);
     direction.applyQuaternion(player.quaternion);
     
-    // Different shooting patterns based on weapon
+    // Different shooting patterns based on weapon level
+    const weaponLevel = gameState.weaponLevel || 1;
+    let bulletType = 'basic';
+    
+    // Upgrade bullet type based on weapon level
+    if (weaponLevel >= 6) bulletType = 'energy';
+    else if (weaponLevel >= 5) bulletType = 'plasma';
+    else if (weaponLevel >= 4) bulletType = 'laser';
+    else if (weaponLevel >= 3) bulletType = 'spread';
+    else if (weaponLevel >= 2) bulletType = 'rapid';
+    
     switch(gameState.weaponType) {
         case 'basic':
-            createBullet(bulletStart, direction, true, 'basic');
+            createBullet(bulletStart, direction, true, bulletType);
             break;
         case 'rapid':
-            createBullet(bulletStart, direction, true, 'rapid');
+            createBullet(bulletStart, direction, true, bulletType);
             break;
         case 'spread':
-            // Triple shot
-            createBullet(bulletStart, direction.clone().rotateY(0.2), true, 'spread');
-            createBullet(bulletStart, direction, true, 'spread');
-            createBullet(bulletStart, direction.clone().rotateY(-0.2), true, 'spread');
+            // Triple shot with upgraded bullets
+            createBullet(bulletStart, direction.clone().rotateY(0.2), true, bulletType);
+            createBullet(bulletStart, direction, true, bulletType);
+            createBullet(bulletStart, direction.clone().rotateY(-0.2), true, bulletType);
             break;
         case 'laser':
-            createBullet(bulletStart, direction, true, 'laser');
+            createBullet(bulletStart, direction, true, bulletType);
             break;
     }
 }
@@ -1131,10 +1241,14 @@ function collectPowerUp(type) {
             showNotification('Health Restored!', '#00ff00');
             break;
         case 'weapon':
-            const weapons = ['basic', 'rapid', 'spread', 'laser'];
-            const currentIndex = weapons.indexOf(gameState.weaponType);
-            gameState.weaponType = weapons[Math.min(weapons.length - 1, currentIndex + 1)];
-            showNotification(`Weapon Upgraded: ${gameState.weaponType.toUpperCase()}`, '#0088ff');
+            // Increase weapon level instead of changing weapon type
+            gameState.weaponLevel = (gameState.weaponLevel || 1) + 1;
+            const maxLevel = 6;
+            if (gameState.weaponLevel > maxLevel) gameState.weaponLevel = maxLevel;
+            
+            const levelNames = ['Basic', 'Enhanced', 'Advanced', 'Laser', 'Plasma', 'Energy'];
+            const levelName = levelNames[gameState.weaponLevel - 1] || 'Unknown';
+            showNotification(`Weapon Upgraded: ${levelName} Level ${gameState.weaponLevel}!`, '#0088ff');
             break;
         case 'boost':
             activateBoost();
@@ -1204,8 +1318,9 @@ function updateBullets() {
         // Check collision with enemies
         enemies.forEach((enemy, enemyIndex) => {
             if (bullet.position.distanceTo(enemy.position) < 1) {
-                // Hit!
-                enemy.userData.health--;
+                // Hit! Use bullet damage
+                const damage = bullet.userData.damage || 1;
+                enemy.userData.health -= damage;
                 
                 if (enemy.userData.health <= 0) {
                     // Enemy destroyed
@@ -1217,9 +1332,9 @@ function updateBullets() {
                     gameState.enemiesDestroyed++;
                     gameState.shotsHit++;
                     
-                    // Score based on enemy type
+                    // Score based on enemy type and bullet damage
                     const scores = { basic: 10, fast: 15, heavy: 25, boss: 100 };
-                    gameState.score += scores[enemy.userData.type] || 10;
+                    gameState.score += (scores[enemy.userData.type] || 10) * damage;
                     
                     // Level up
                     if (gameState.score > gameState.level * 500) {
@@ -1227,13 +1342,31 @@ function updateBullets() {
                     }
                 }
                 
+                // Remove bullet and trail
+                if (bullet.userData.trail) {
+                    scene.remove(bullet.userData.trail);
+                    if (bullet.userData.trail.geometry) bullet.userData.trail.geometry.dispose();
+                    if (bullet.userData.trail.material) bullet.userData.trail.material.dispose();
+                }
                 scene.remove(bullet);
                 bullets.splice(index, 1);
             }
         });
         
+        // Update bullet trail if it exists
+        if (bullet.userData.trail) {
+            bullet.userData.trail.position.copy(bullet.position);
+            bullet.userData.trail.lookAt(bullet.position.clone().add(bullet.userData.direction));
+        }
+        
         // Remove bullets that are too far
         if (bullet.position.distanceTo(player.position) > 60) {
+            // Clean up trail
+            if (bullet.userData.trail) {
+                scene.remove(bullet.userData.trail);
+                if (bullet.userData.trail.geometry) bullet.userData.trail.geometry.dispose();
+                if (bullet.userData.trail.material) bullet.userData.trail.material.dispose();
+            }
             scene.remove(bullet);
             bullets.splice(index, 1);
         }
@@ -1306,6 +1439,12 @@ function updateParticles() {
 function updateUI() {
     document.getElementById('score').textContent = `Score: ${gameState.score}`;
     document.getElementById('level').textContent = `Level: ${gameState.level}`;
+    
+    // Update weapon level display
+    const weaponLevel = gameState.weaponLevel || 1;
+    const levelNames = ['Basic', 'Enhanced', 'Advanced', 'Laser', 'Plasma', 'Energy'];
+    const levelName = levelNames[weaponLevel - 1] || 'Unknown';
+    document.getElementById('weaponLevel').textContent = `Weapon: ${levelName} Lv.${weaponLevel}`;
 }
 
 function gameOver() {
