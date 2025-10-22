@@ -1,7 +1,7 @@
 {
-  "name": "advanced-threejs-graphics",
+  "name": "nexus-strike-game",
   "version": "2.0.0",
-  "description": "Advanced Three.js graphics projects featuring 3D games, interactive scenes, and cutting-edge WebGL demos",
+  "description": "Advanced 3D Space Shooter built with Three.js featuring multiple environments, dynamic AI, and professional gameplay",
   "main": "index.js",
   "scripts": {
     "dev": "vite",
@@ -21,7 +21,7 @@
     "computer-graphics",
     "visualization"
   ],
-  "author": "Your Name",
+  "author": "Avanith Kanamarlapudi",
   "license": "MIT",
   "devDependencies": {
     "vite": "^5.0.0",
