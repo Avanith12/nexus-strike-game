@@ -37,6 +37,55 @@ A professional-grade 3D space shooter game built with Three.js, featuring advanc
 - **M** - Toggle sound
 - **R** - Reload weapon
 
+## Game Assets
+
+### 3D Ship Models
+- **Modern Player Ship** - Sleek futuristic fighter with:
+  - Detailed fuselage with cockpit dome
+  - Swept-back wings with navigation lights
+  - Visible missile launchers
+  - Multiple engine exhaust ports
+  - Professional materials with emissive properties
+
+- **Enemy Ship Variants**:
+  - **Fighter** - Aggressive angular design with weapon pods
+  - **Interceptor** - Sleek fast design with swept wings
+  - **Bomber** - Heavy intimidating design with multiple engines
+  - **Destroyer** - Massive boss ship with command bridge
+
+### Visual Effects
+- **Particle Systems** - Engine exhaust, explosions, and environmental effects
+- **Dynamic Lighting** - Real-time shadows and multiple light sources
+- **Shield Effects** - Cyan wireframe sphere around player
+- **Boost Effects** - Green emissive glow during speed boost
+- **Power-up Visuals** - Distinctive shapes and colors for each type
+
+### Audio Assets
+- **Procedural Music** - Real-time generated background music
+- **Cinematic Story Music** - Atmospheric intro soundtrack
+- **Sound Effects** - Shooting, explosions, power-ups (all procedurally generated)
+- **Dynamic Audio** - Music tempo and scale changes based on level
+
+## Game Features
+
+### Story & Immersion
+- **Cinematic Introduction** - Engaging story sequence before gameplay
+- **Professional UI** - Clean, modern interface with gaming fonts
+- **Map Selection** - Toggle between 4 unique environments
+- **Real-time Minimap** - Top-down view of battlefield
+
+### Power-up System
+- **Health Pack** - Restores player health
+- **Weapon Upgrade** - Enhances bullet damage and appearance
+- **Speed Boost** - Temporary speed increase with visual effects
+- **Shield** - Invulnerability with protective sphere effect
+
+### Advanced Gameplay
+- **Combo System** - Multiplier bonuses for consecutive hits
+- **Leaderboard** - Persistent high score tracking
+- **Statistics Tracking** - Accuracy, enemies destroyed, level progression
+- **Pause/Resume** - Smooth game state management
+
 ## Quick Start
 
 ### Development Server
