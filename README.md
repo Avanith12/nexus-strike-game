@@ -10,6 +10,16 @@
 
 A professional-grade 3D space shooter game built with Three.js, featuring advanced graphics, dynamic gameplay, and multiple environments. This project demonstrates proficiency in WebGL programming, 3D mathematics, and modern web development techniques.
 
+## 🎮 Play the Game
+
+**[PLAY NEXUS STRIKE NOW](https://avanith12.github.io/nexus-strike-game/)**
+
+### Device Compatibility
+-  **Desktop/Laptop** - Fully optimized and tested
+-  **Mobile/Tablet** - Currently in development (touch controls coming soon)
+
+*The game is currently optimized for desktop and laptop computers with keyboard and mouse controls. Mobile support with touch controls is planned for future updates.*
+
 ## Features
 
 ### Core Gameplay
