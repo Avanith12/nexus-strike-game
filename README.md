@@ -85,7 +85,9 @@ Then open `http://localhost:8000/index.html` in your browser.
 
 ### Advanced Features
 - **OrbitControls** - Camera manipulation
-- **Web Audio API** - Sound effects and audio management
+- **Web Audio API** - Procedural sound synthesis and dynamic music
+- **Procedural Audio System** - Real-time generated soundtracks and effects
+- **Dynamic Music** - Level-based tempo and scale changes
 - **localStorage** - Leaderboard persistence
 - **RequestAnimationFrame** - Smooth game loop
 - **BufferGeometry** - Efficient particle rendering
@@ -120,6 +122,29 @@ Graphics/
 └── README.md               # Project documentation
 ```
 
+## Audio System
+
+### Procedural Sound Generation
+This game features a **completely original audio system** built from scratch using the **Web Audio API**:
+
+- **No external audio files** - All sounds are generated procedurally
+- **Real-time synthesis** - Sawtooth wave oscillators create retro sci-fi sounds
+- **Dynamic music** - Tempo and musical scales change based on game level
+- **Multi-layered composition** - Bass, melody, and harmony generated algorithmically
+
+### Music System Features
+- **6 Musical Scales** - Each level has its own key signature and mood
+- **Dynamic Tempo** - BPM increases from 120 to 220 as you level up
+- **Procedural Generation** - Music composed in real-time using mathematical algorithms
+- **Volume Control** - Background music at optimal volume levels
+- **Mute Toggle** - Press "M" to toggle all audio
+
+### Sound Effects
+- **Shooting sounds** - Generated sawtooth waves with envelope shaping
+- **Explosion effects** - Noise synthesis with frequency sweeps
+- **Power-up sounds** - Ascending frequency patterns
+- **All procedural** - No pre-recorded audio files required
+
 ## Key Learning Outcomes
 
 This project demonstrates expertise in:
@@ -136,13 +161,19 @@ This project demonstrates expertise in:
    - Particle system implementation
    - Performance optimization techniques
 
-3. **Game Development**
+3. **Audio Programming**
+   - Web Audio API implementation
+   - Procedural sound synthesis
+   - Musical theory application
+   - Real-time audio generation
+
+4. **Game Development**
    - Game loop architecture
    - State management
    - User input handling
    - Memory management
 
-4. **Web Development**
+5. **Web Development**
    - Modern JavaScript (ES6+)
    - CSS3 animations and transitions
    - Responsive design principles
@@ -166,6 +197,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [Three.js](https://threejs.org/) - Amazing 3D library
 - [WebGL](https://www.khronos.org/webgl/) - Web graphics standard
+- [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API) - Browser audio synthesis
 - [MDN Web Docs](https://developer.mozilla.org/) - Excellent documentation
 
 ## Contact
