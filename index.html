@@ -1181,24 +1181,7 @@
             }
         }
         
-        // Debug function to check if elements exist
-        function debugUI() {
-            console.log('=== UI Debug ===');
-            console.log('Toggle button:', document.getElementById('toggleInstructions'));
-            console.log('Instructions panel:', document.getElementById('instructions'));
-            console.log('Game container:', document.getElementById('gameContainer'));
-        }
-        
-        // Run debug when page loads
-        window.addEventListener('load', function() {
-            setTimeout(debugUI, 1000);
-        });
-        
-        // Test function - call this from console if needed
-        window.testToggle = function() {
-            console.log('Testing toggle function...');
-            toggleInstructions();
-        };
+        // Debug function removed - UI elements are working correctly
         
         // Make sure the function is available globally
         window.toggleInstructions = toggleInstructions;
