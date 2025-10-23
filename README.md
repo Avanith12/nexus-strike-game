@@ -38,9 +38,10 @@ A professional-grade 3D space shooter game built with Three.js, featuring advanc
 - **Performance optimization** with efficient rendering techniques
 
 ### Controls
-- **WASD** - Ship movement (including vertical movement)
-- **SPACE** - Shoot
-- **SHIFT** - Boost
+- **WASD** - Ship movement (forward/back/left/right)
+- **Q/E** - Vertical movement (up/down)
+- **SPACE** or **LEFT MOUSE CLICK** - Shoot
+- **SHIFT** - Speed boost
 - **MOUSE** - Camera control (free mode)
 - **C** - Toggle camera mode (follow/free)
 - **P** - Pause game
