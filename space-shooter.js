@@ -1513,10 +1513,17 @@ function setupEventListeners() {
     // Resize handler
     const resizeHandler = onWindowResize;
     
-    // Click handler for audio context
-    const clickHandler = () => {
+    // Click handler for audio context and shooting
+    const clickHandler = (event) => {
+        // Resume audio context if suspended
         if (audioContext && audioContext.state === 'suspended') {
             audioContext.resume();
+        }
+        
+        // Shoot on left mouse click
+        if (event.button === 0) { // Left mouse button
+            event.preventDefault();
+            shoot();
         }
     };
     
