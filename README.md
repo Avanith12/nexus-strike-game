@@ -97,6 +97,14 @@ A professional-grade 3D space shooter game built with Three.js, featuring advanc
 - **Statistics Tracking** - Accuracy, enemies destroyed, level progression
 - **Pause/Resume** - Smooth game state management
 
+## 💡 Gameplay Tips
+
+- **Collect power-ups** to enhance your ship's capabilities
+- **Use the minimap** to track enemy positions
+- **Maintain combos** for higher scores
+- **Switch camera modes** for different perspectives
+- **Pause frequently** to plan your strategy
+
 ## Development Status
 
 🚧 **This project is actively under development!** 
