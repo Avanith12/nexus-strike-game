@@ -282,6 +282,10 @@ function startBackgroundMusic() {
 // Initialize minimap
 function initMinimap() {
     minimapCanvas = document.getElementById('minimapCanvas');
+    if (!minimapCanvas) {
+        console.warn('Minimap canvas not found, skipping minimap initialization');
+        return;
+    }
     minimapCtx = minimapCanvas.getContext('2d');
     minimapCanvas.width = 200;
     minimapCanvas.height = 200;
@@ -1665,6 +1669,27 @@ function toggleMute() {
         audioContext.resume().catch(e => console.log('Audio resume failed:', e));
     }
     
+    // Restart background music if sound is enabled and music was playing before
+    if (gameSettings.soundEnabled && musicEnabled) {
+        // Clear existing music oscillators
+        musicOscillators.forEach(oscillator => {
+            try {
+                if (oscillator.state !== 'closed') {
+                    oscillator.stop();
+                    oscillator.disconnect();
+                }
+            } catch (e) {
+                // Oscillator may already be stopped
+            }
+        });
+        musicOscillators = [];
+        
+        // Restart background music
+        setTimeout(() => {
+            startBackgroundMusic();
+        }, 300); // Small delay to ensure cleanup is complete
+    }
+    
     showNotification(gameSettings.soundEnabled ? 'Sound On' : 'Sound Off', 1500);
 }
 
@@ -1930,7 +1955,7 @@ function collectPowerUp(type) {
     switch(type) {
         case 'health':
             gameState.health = Math.min(gameState.maxHealth, gameState.health + 25);
-            showNotification('Health Restored!', '#00ff00');
+            showNotification('Health Restored!', 2000);
             break;
         case 'weapon':
             // Increase weapon level instead of changing weapon type
@@ -1940,16 +1965,16 @@ function collectPowerUp(type) {
             
             const levelNames = ['Basic', 'Enhanced', 'Advanced', 'Laser', 'Plasma', 'Energy'];
             const levelName = levelNames[gameState.weaponLevel - 1] || 'Unknown';
-            showNotification(`Weapon Upgraded: ${levelName} Level ${gameState.weaponLevel}!`, '#0088ff');
+            showNotification(`Weapon Upgraded: ${levelName} Level ${gameState.weaponLevel}!`, 2000);
             break;
         case 'boost':
             activateBoost();
-            showNotification('Speed Boost Activated!', '#ffff00');
+            showNotification('Speed Boost Activated!', 2000);
             break;
         case 'shield':
             gameState.invulnerable = true;
             gameState.invulnerableTime = gameSettings.invulnerableDuration;
-            showNotification('Shield Activated!', '#00ffff');
+            showNotification('Shield Activated!', 2000);
             // Add shield visual effect
             addShieldEffect();
             break;
@@ -2240,6 +2265,7 @@ function restartGame() {
         invulnerable: false,
         invulnerableTime: 0,
         paused: false,
+        scatterMode: false,
         shotsFired: 0,
         shotsHit: 0,
         enemiesDestroyed: 0,
@@ -2576,10 +2602,13 @@ function cleanupGame() {
     // Clean up audio oscillators
     musicOscillators.forEach(oscillator => {
         try {
-            oscillator.stop();
-            oscillator.disconnect();
+            if (oscillator.state !== 'closed') {
+                oscillator.stop();
+                oscillator.disconnect();
+            }
         } catch (e) {
-            // Oscillator may already be stopped
+            // Oscillator may already be stopped or disposed
+            console.log('Oscillator cleanup warning:', e.message);
         }
     });
     musicOscillators = [];
