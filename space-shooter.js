@@ -15,6 +15,7 @@ let animationId = null;
 let gameTimers = [];
 let eventListeners = [];
 let currentMusicLevel = 1, musicEnabled = true;
+let musicOscillators = []; // Track active music oscillators
 let gameState = {
     score: 0,
     health: 100,
@@ -33,6 +34,7 @@ let gameState = {
     invulnerable: false,
     invulnerableTime: 0,
     paused: false,
+    scatterMode: false, // Whether scatter shot mode is active
     shotsFired: 0,
     shotsHit: 0,
     enemiesDestroyed: 0,
@@ -201,8 +203,19 @@ function startBackgroundMusic() {
         gainNode.gain.linearRampToValueAtTime(0.1, startTime + 0.01);
         gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
         
+        // Track oscillator for cleanup
+        musicOscillators.push(oscillator);
+        
         oscillator.start(startTime);
         oscillator.stop(startTime + duration);
+        
+        // Clean up after note ends
+        setTimeout(() => {
+            const index = musicOscillators.indexOf(oscillator);
+            if (index > -1) {
+                musicOscillators.splice(index, 1);
+            }
+        }, duration * 1000 + 100);
     };
     
     const playChord = (frequencies, duration, startTime) => {
@@ -1298,6 +1311,15 @@ function createBullet(startPos, direction, isPlayerBullet = true, bulletType = '
             shape: 'dodecahedron', // Complex shape
             emissiveIntensity: 1.0, // Maximum glow
             trail: true
+        },
+        scatter: { 
+            color: 0xff8800, // Orange color
+            size: 0.12, // Small but fast
+            speed: 0.4, // Medium speed
+            damage: 1, // Standard damage
+            shape: 'sphere',
+            emissiveIntensity: 0.4,
+            trail: false
         }
     };
     
@@ -1379,7 +1401,8 @@ function addBulletTrail(bullet, color) {
 }
 
 function createExplosion(position, size = 1) {
-    const particleCount = 50;
+    // Limit particle count based on size to prevent performance issues
+    const particleCount = Math.min(50, Math.max(20, Math.floor(size * 30)));
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
@@ -1393,14 +1416,15 @@ function createExplosion(position, size = 1) {
         positions[i3 + 1] = position.y;
         positions[i3 + 2] = position.z;
         
-        // Velocity
-        velocities[i3] = (Math.random() - 0.5) * 0.2;
-        velocities[i3 + 1] = (Math.random() - 0.5) * 0.2;
-        velocities[i3 + 2] = (Math.random() - 0.5) * 0.2;
+        // Velocity - scale with size
+        const velocityScale = 0.2 * size;
+        velocities[i3] = (Math.random() - 0.5) * velocityScale;
+        velocities[i3 + 1] = (Math.random() - 0.5) * velocityScale;
+        velocities[i3 + 2] = (Math.random() - 0.5) * velocityScale;
         
-        // Color
+        // Color - more varied colors
         const color = new THREE.Color();
-        color.setHSL(Math.random() * 0.1, 1, 0.5);
+        color.setHSL(Math.random() * 0.2, 1, 0.5 + Math.random() * 0.3);
         colors[i3] = color.r;
         colors[i3 + 1] = color.g;
         colors[i3 + 2] = color.b;
@@ -1413,22 +1437,70 @@ function createExplosion(position, size = 1) {
         size: 0.1 * size,
         vertexColors: true,
         transparent: true,
-        opacity: 1
+        opacity: 1,
+        blending: THREE.AdditiveBlending // Better visual effect
     });
     
     const explosion = new THREE.Points(geometry, material);
     explosion.userData = {
         velocities: velocities,
         life: 1.0,
-        decay: 0.02
+        decay: 0.03, // Faster decay to prevent accumulation
+        maxAge: 1000 // Maximum age in milliseconds
     };
     
     scene.add(explosion);
     particles.push(explosion);
+    
+    // Limit total particles to prevent memory issues
+    if (particles.length > 20) {
+        const oldParticle = particles.shift();
+        scene.remove(oldParticle);
+        if (oldParticle.geometry) oldParticle.geometry.dispose();
+        if (oldParticle.material) oldParticle.material.dispose();
+    }
+}
+
+// ===========================================
+// SCATTER SHOT SYSTEM - Shoots bullets in all directions
+// ===========================================
+function shootScatter() {
+    if (gameState.gameOver) return;
+    
+    // Update shots fired counter
+    gameState.shotsFired += 8; // Count each bullet
+    
+    const bulletStart = player.position.clone();
+    bulletStart.y += 1;
+    
+    // Shoot bullets in 8 directions (every 45 degrees)
+    for (let i = 0; i < 8; i++) {
+        const angle = (i * Math.PI * 2) / 8; // 0, 45, 90, 135, 180, 225, 270, 315 degrees
+        const direction = new THREE.Vector3(
+            Math.sin(angle), // X direction
+            0, // Y direction (keep horizontal)
+            Math.cos(angle) // Z direction
+        );
+        
+        // Create scatter bullet with special properties
+        createBullet(bulletStart, direction, true, 'scatter');
+    }
+    
+    // Show notification
+    showNotification('SCATTER SHOT!', 2000);
+    
+    // Play special sound effect
+    if (sounds.powerUp) sounds.powerUp();
 }
 
 function shoot() {
     if (gameState.gameOver) return;
+    
+    // Check if scatter mode is active
+    if (gameState.scatterMode) {
+        shootScatter();
+        return;
+    }
     
     // Update shots fired counter
     gameState.shotsFired++;
@@ -1502,6 +1574,11 @@ function setupEventListeners() {
         if (event.code === 'KeyC') {
             event.preventDefault();
             toggleCameraMode();
+        }
+        
+        if (event.code === 'KeyV') {
+            event.preventDefault();
+            toggleScatterMode();
         }
     };
     
@@ -1596,10 +1673,29 @@ function toggleCameraMode() {
     
     if (cameraMode === 'follow') {
         controls.enabled = false;
+        // Reset camera position to follow player
+        camera.position.copy(player.position).add(cameraOffset);
+        camera.lookAt(player.position);
         showNotification('Camera: Follow Spaceship', 2000);
     } else {
         controls.enabled = true;
+        // Set camera target to current player position
+        controls.target.copy(player.position);
+        controls.update();
         showNotification('Camera: Free Mode', 2000);
+    }
+}
+
+// ===========================================
+// SCATTER MODE TOGGLE - Activates/deactivates scatter shot
+// ===========================================
+function toggleScatterMode() {
+    gameState.scatterMode = !gameState.scatterMode;
+    
+    if (gameState.scatterMode) {
+        showNotification('SCATTER MODE ON - Press SPACE to shoot in all directions!', 3000);
+    } else {
+        showNotification('SCATTER MODE OFF - Normal shooting restored', 2000);
     }
 }
 
@@ -1780,10 +1876,15 @@ function updateEnemies() {
             enemy.userData.lastShot = currentTime;
         }
         
-        // Check collision with player
-        if (enemy.position.distanceTo(player.position) < 2 && !gameState.invulnerable) {
+        // Check collision with player - use enemy size for accurate collision
+        const enemySize = enemy.userData.type === 'boss' ? 3.0 : 
+                         enemy.userData.type === 'heavy' ? 2.0 : 
+                         enemy.userData.type === 'fast' ? 1.2 : 1.5;
+        const collisionDistance = enemySize + 1.0; // Player radius + enemy radius
+        
+        if (enemy.position.distanceTo(player.position) < collisionDistance && !gameState.invulnerable) {
             takeDamage(10);
-            createExplosion(enemy.position, 1.5);
+            createExplosion(enemy.position, enemySize);
             scene.remove(enemy);
             enemies.splice(index, 1);
         }
@@ -1885,6 +1986,13 @@ function addShieldEffect() {
 function removeShieldEffect() {
     if (shieldEffect) {
         scene.remove(shieldEffect);
+        // Properly dispose of geometry and material
+        if (shieldEffect.geometry) {
+            shieldEffect.geometry.dispose();
+        }
+        if (shieldEffect.material) {
+            shieldEffect.material.dispose();
+        }
         shieldEffect = null;
     }
 }
@@ -1923,9 +2031,20 @@ function updateBullets() {
                     gameState.enemiesDestroyed++;
                     gameState.shotsHit++;
                     
-                    // Score based on enemy type and bullet damage
+                    // Update combo system
+                    const currentTime = Date.now();
+                    if (currentTime - gameState.lastHitTime <= gameState.comboTime) {
+                        gameState.comboMultiplier = Math.min(gameState.comboMultiplier + 0.5, 5.0);
+                    } else {
+                        gameState.comboMultiplier = 1.0;
+                    }
+                    gameState.lastHitTime = currentTime;
+                    
+                    // Score based on enemy type, bullet damage, and combo multiplier
                     const scores = { basic: 10, fast: 15, heavy: 25, boss: 100 };
-                    gameState.score += (scores[enemy.userData.type] || 10) * damage;
+                    const baseScore = (scores[enemy.userData.type] || 10) * damage;
+                    const comboScore = Math.floor(baseScore * gameState.comboMultiplier);
+                    gameState.score += comboScore;
                     
                     // Level up
                     if (gameState.score > gameState.level * 500) {
@@ -1998,9 +2117,15 @@ function updateParticles() {
         particle.userData.life -= particle.userData.decay;
         particle.material.opacity = particle.userData.life;
         
-        if (particle.userData.life <= 0) {
+        // Remove particles that are too old or have faded out
+        if (particle.userData.life <= 0 || particle.userData.maxAge <= 0) {
             scene.remove(particle);
+            if (particle.geometry) particle.geometry.dispose();
+            if (particle.material) particle.material.dispose();
             particles.splice(index, 1);
+        } else {
+            // Decrease max age
+            particle.userData.maxAge -= 16; // ~60fps
         }
     });
     
@@ -2030,6 +2155,38 @@ function updateParticles() {
 function updateUI() {
     document.getElementById('score').textContent = `Score: ${gameState.score}`;
     document.getElementById('level').textContent = `Level: ${gameState.level}`;
+    
+    // Update combo display
+    const comboElement = document.getElementById('combo');
+    if (comboElement) {
+        comboElement.textContent = `Combo: ${gameState.comboMultiplier.toFixed(1)}x`;
+        // Change color based on combo level
+        if (gameState.comboMultiplier >= 3) {
+            comboElement.style.color = '#ff0000';
+            comboElement.style.textShadow = '0 0 10px #ff0000';
+        } else if (gameState.comboMultiplier >= 2) {
+            comboElement.style.color = '#ff8800';
+            comboElement.style.textShadow = '0 0 8px #ff8800';
+        } else {
+            comboElement.style.color = '#ffff00';
+            comboElement.style.textShadow = '0 0 5px #ffff00';
+        }
+    }
+    
+    // Update health display
+    document.getElementById('health').textContent = `Health: ${gameState.health}`;
+    const healthFill = document.getElementById('healthFill');
+    if (healthFill) {
+        const healthPercent = (gameState.health / gameState.maxHealth) * 100;
+        healthFill.style.width = `${healthPercent}%`;
+    }
+    
+    // Update level progress bar
+    const levelFill = document.getElementById('levelFill');
+    if (levelFill) {
+        const levelProgress = (gameState.score % 500) / 500 * 100;
+        levelFill.style.width = `${levelProgress}%`;
+    }
     
     // Update weapon level display
     const weaponLevel = gameState.weaponLevel || 1;
@@ -2099,26 +2256,41 @@ function restartGame() {
     // Clear all objects and dispose of Three.js resources
     enemies.forEach(enemy => {
         scene.remove(enemy);
-        if (enemy.geometry) enemy.geometry.dispose();
-        if (enemy.material) {
-            if (Array.isArray(enemy.material)) {
-                enemy.material.forEach(mat => mat.dispose());
-            } else {
-                enemy.material.dispose();
+        // Dispose of all child objects recursively
+        enemy.traverse((child) => {
+            if (child.geometry) child.geometry.dispose();
+            if (child.material) {
+                if (Array.isArray(child.material)) {
+                    child.material.forEach(mat => mat.dispose());
+                } else {
+                    child.material.dispose();
+                }
             }
-        }
+        });
     });
     
     bullets.forEach(bullet => {
         scene.remove(bullet);
         if (bullet.geometry) bullet.geometry.dispose();
         if (bullet.material) bullet.material.dispose();
+        // Clean up bullet trails
+        if (bullet.userData.trail) {
+            scene.remove(bullet.userData.trail);
+            if (bullet.userData.trail.geometry) bullet.userData.trail.geometry.dispose();
+            if (bullet.userData.trail.material) bullet.userData.trail.material.dispose();
+        }
     });
     
     enemyBullets.forEach(bullet => {
         scene.remove(bullet);
         if (bullet.geometry) bullet.geometry.dispose();
         if (bullet.material) bullet.material.dispose();
+        // Clean up bullet trails
+        if (bullet.userData.trail) {
+            scene.remove(bullet.userData.trail);
+            if (bullet.userData.trail.geometry) bullet.userData.trail.geometry.dispose();
+            if (bullet.userData.trail.material) bullet.userData.trail.material.dispose();
+        }
     });
     
     powerUps.forEach(powerUp => {
@@ -2400,6 +2572,17 @@ function cleanupGame() {
     if (controls) {
         controls.dispose();
     }
+    
+    // Clean up audio oscillators
+    musicOscillators.forEach(oscillator => {
+        try {
+            oscillator.stop();
+            oscillator.disconnect();
+        } catch (e) {
+            // Oscillator may already be stopped
+        }
+    });
+    musicOscillators = [];
     
     // Close audio context
     if (audioContext && audioContext.state !== 'closed') {
