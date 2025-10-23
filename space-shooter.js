@@ -742,79 +742,87 @@ function createEngineExhaust(ship) {
     ship.userData.exhaust = exhaust;
 }
 
+// ===========================================
+// ENEMY CREATION - Creates different types of enemy ships
+// ===========================================
 function createEnemy(type = 'basic') {
+    // Define different enemy types with their properties
     const enemyTypes = {
         basic: { 
-            color: 0x8b0000, 
-            emissive: 0x440000,
-            size: 0.8, 
-            health: 1, 
-            speed: 0.02,
-            shape: 'fighter'
+            color: 0x8b0000, // Dark red color
+            emissive: 0x440000, // Red glow
+            size: 0.8, // Ship size multiplier
+            health: 1, // Hit points
+            speed: 0.02, // Movement speed
+            shape: 'fighter' // Ship design type
         },
         fast: { 
-            color: 0xff4500, 
-            emissive: 0x662200,
-            size: 0.6, 
-            health: 1, 
-            speed: 0.04,
-            shape: 'interceptor'
+            color: 0xff4500, // Orange color
+            emissive: 0x662200, // Orange glow
+            size: 0.6, // Smaller but faster
+            health: 1, // Same health as basic
+            speed: 0.04, // Twice as fast
+            shape: 'interceptor' // Sleek design
         },
         heavy: { 
-            color: 0x4b0082, 
-            emissive: 0x220044,
-            size: 1.2, 
-            health: 3, 
-            speed: 0.015,
-            shape: 'bomber'
+            color: 0x4b0082, // Purple color
+            emissive: 0x220044, // Purple glow
+            size: 1.2, // Larger ship
+            health: 3, // Three times the health
+            speed: 0.015, // Slower movement
+            shape: 'bomber' // Heavy design
         },
         boss: { 
-            color: 0x8b008b, 
-            emissive: 0x440044,
-            size: 2.0, 
-            health: 10, 
-            speed: 0.01,
-            shape: 'destroyer'
+            color: 0x8b008b, // Magenta color
+            emissive: 0x440044, // Magenta glow
+            size: 2.0, // Very large ship
+            health: 10, // Ten times the health
+            speed: 0.01, // Very slow
+            shape: 'destroyer' // Massive design
         }
     };
     
+    // Get the configuration for this enemy type (default to basic if type not found)
     const config = enemyTypes[type] || enemyTypes.basic;
     
-    // Create modern enemy ship
+    // Create the 3D model for this enemy ship
     const enemy = createModernEnemyShip(config.shape, config);
     
-    // Random position
+    // Position the enemy randomly in 3D space
     enemy.position.set(
-        (Math.random() - 0.5) * 50,
-        Math.random() * 20 + 5,
-        (Math.random() - 0.5) * 50
+        (Math.random() - 0.5) * 50, // X: -25 to 25
+        Math.random() * 20 + 5, // Y: 5 to 25 (above ground)
+        (Math.random() - 0.5) * 50  // Z: -25 to 25
     );
     
+    // Enable shadows for realistic lighting
     enemy.castShadow = true;
     enemy.receiveShadow = true;
     
-    // Add enemy-specific details
+    // Add special details for boss enemies
     if (type === 'boss') {
-        // Add boss details
+        // Add large wings for boss ships
         const bossWingGeometry = new THREE.BoxGeometry(0.3, 0.1, 1.5);
         const bossWingMaterial = new THREE.MeshPhongMaterial({ 
-            color: 0x660066,
-            emissive: 0x220022
+            color: 0x660066, // Dark purple
+            emissive: 0x220022 // Subtle purple glow
         });
         
+        // Left wing
         const leftWing = new THREE.Mesh(bossWingGeometry, bossWingMaterial);
         leftWing.position.set(-1.2, 0, 0);
         enemy.add(leftWing);
         
+        // Right wing
         const rightWing = new THREE.Mesh(bossWingGeometry, bossWingMaterial);
         rightWing.position.set(1.2, 0, 0);
         enemy.add(rightWing);
         
-        // Add boss engine glow
+        // Add glowing engine effect for boss
         const bossEngineGeometry = new THREE.SphereGeometry(0.4, 8, 8);
         const bossEngineMaterial = new THREE.MeshPhongMaterial({ 
-            color: 0xff0088,
-            emissive: 0xff0088,
+            color: 0xff0088, // Bright magenta
+            emissive: 0xff0088, // Bright glow
             transparent: true,
             opacity: 0.8
         });
@@ -823,31 +831,35 @@ function createEnemy(type = 'basic') {
         enemy.add(bossEngine);
     }
     
-    // Add navigation lights to enemies
+    // Add red navigation lights to all enemies (like aircraft lights)
     const navLightGeometry = new THREE.SphereGeometry(0.03, 6, 6);
     const enemyLightMaterial = new THREE.MeshPhongMaterial({ 
-        color: 0xff0000,
-        emissive: 0xff0000
+        color: 0xff0000, // Red color
+        emissive: 0xff0000 // Red glow
     });
     
+    // Left navigation light
     const leftLight = new THREE.Mesh(navLightGeometry, enemyLightMaterial);
     leftLight.position.set(-config.size * 0.5, 0, config.size * 0.5);
     enemy.add(leftLight);
     
+    // Right navigation light
     const rightLight = new THREE.Mesh(navLightGeometry, enemyLightMaterial);
     rightLight.position.set(config.size * 0.5, 0, config.size * 0.5);
     enemy.add(rightLight);
     
+    // Store enemy data for game logic
     enemy.userData = {
-        type: type,
-        speed: config.speed,
-        health: config.health,
-        maxHealth: config.health,
-        lastShot: 0,
-        shootRate: type === 'boss' ? 500 : 1500,
-        rotationSpeed: 0.01 + Math.random() * 0.02
+        type: type, // Enemy type (basic, fast, heavy, boss)
+        speed: config.speed, // Movement speed
+        health: config.health, // Current health
+        maxHealth: config.health, // Maximum health
+        lastShot: 0, // Timestamp of last shot fired
+        shootRate: type === 'boss' ? 500 : 1500, // How often enemy shoots (ms)
+        rotationSpeed: 0.01 + Math.random() * 0.02 // Random rotation speed
     };
     
+    // Add enemy to the scene and enemy array
     scene.add(enemy);
     enemies.push(enemy);
 }
@@ -1160,17 +1172,23 @@ function createEnemyDestroyer(group, config) {
     return group;
 }
 
+// ===========================================
+// POWER-UP CREATION - Creates collectible power-ups
+// ===========================================
 function createPowerUp(type) {
+    // Define different power-up types with their visual properties
     const powerUpTypes = {
-        health: { color: 0x00ff00, shape: 'sphere', size: 1.5 },
-        weapon: { color: 0x0088ff, shape: 'box', size: 1.2 },
-        boost: { color: 0xffff00, shape: 'cone', size: 1.2 },
-        shield: { color: 0x00ffff, shape: 'octahedron', size: 1.2 }
+        health: { color: 0x00ff00, shape: 'sphere', size: 1.5 }, // Green sphere - restores health
+        weapon: { color: 0x0088ff, shape: 'box', size: 1.2 }, // Blue box - upgrades weapon
+        boost: { color: 0xffff00, shape: 'cone', size: 1.2 }, // Yellow cone - speed boost
+        shield: { color: 0x00ffff, shape: 'octahedron', size: 1.2 } // Cyan octahedron - temporary invulnerability
     };
     
+    // Get the configuration for this power-up type
     const config = powerUpTypes[type];
     let geometry;
     
+    // Create the appropriate 3D shape based on power-up type
     switch(config.shape) {
         case 'sphere':
             geometry = new THREE.SphereGeometry(0.5 * config.size, 12, 12);
@@ -1186,91 +1204,99 @@ function createPowerUp(type) {
             break;
     }
     
+    // Create glowing material for the power-up
     const material = new THREE.MeshPhongMaterial({ 
-        color: config.color,
-        transparent: true,
-        opacity: 0.9,
-        emissive: config.color,
-        emissiveIntensity: 0.5,
-        shininess: 100
+        color: config.color, // Base color
+        transparent: true, // Enable transparency
+        opacity: 0.9, // 90% opaque
+        emissive: config.color, // Glowing effect
+        emissiveIntensity: 0.5, // Glow strength
+        shininess: 100 // Surface shininess
     });
     const powerUp = new THREE.Mesh(geometry, material);
     
-    // Random position closer to player
+    // Position the power-up randomly near the player
     powerUp.position.set(
-        (Math.random() - 0.5) * 20,
-        Math.random() * 8 + 3,
-        (Math.random() - 0.5) * 20
+        (Math.random() - 0.5) * 20, // X: -10 to 10
+        Math.random() * 8 + 3, // Y: 3 to 11 (above ground)
+        (Math.random() - 0.5) * 20  // Z: -10 to 10
     );
     
+    // Store power-up data for animation and collection
     powerUp.userData = {
-        type: type,
-        rotationSpeed: 0.08,
-        bobSpeed: 0.005,
-        collected: false
+        type: type, // Power-up type
+        rotationSpeed: 0.08, // How fast it rotates
+        bobSpeed: 0.005, // How fast it bobs up and down
+        collected: false // Whether it's been collected
     };
     
+    // Enable shadows for realistic lighting
     powerUp.castShadow = true;
     powerUp.receiveShadow = true;
     
+    // Add to scene and power-up array
     scene.add(powerUp);
     powerUps.push(powerUp);
 }
 
+// ===========================================
+// BULLET CREATION - Creates projectiles fired by player and enemies
+// ===========================================
 function createBullet(startPos, direction, isPlayerBullet = true, bulletType = 'basic') {
+    // Define different bullet types with their properties
     const bulletTypes = {
         basic: { 
-            color: 0xffff00, 
-            size: 0.15, 
-            speed: 0.4, 
-            damage: 1,
-            shape: 'sphere',
-            emissiveIntensity: 0.3,
-            trail: false
+            color: 0xffff00, // Yellow color
+            size: 0.15, // Bullet size
+            speed: 0.4, // Movement speed
+            damage: 1, // Damage dealt
+            shape: 'sphere', // 3D shape
+            emissiveIntensity: 0.3, // Glow strength
+            trail: false // Whether it has a trail effect
         },
         rapid: { 
-            color: 0x00ffff, 
-            size: 0.12, 
-            speed: 0.5, 
-            damage: 1,
+            color: 0x00ffff, // Cyan color
+            size: 0.12, // Smaller but faster
+            speed: 0.5, // Faster movement
+            damage: 1, // Same damage
             shape: 'sphere',
             emissiveIntensity: 0.4,
             trail: false
         },
         spread: { 
-            color: 0xff8800, 
-            size: 0.18, 
-            speed: 0.3, 
-            damage: 1,
+            color: 0xff8800, // Orange color
+            size: 0.18, // Larger bullet
+            speed: 0.3, // Slower movement
+            damage: 1, // Same damage
             shape: 'sphere',
             emissiveIntensity: 0.5,
             trail: false
         },
         laser: { 
-            color: 0xff0088, 
-            size: 0.25, 
-            speed: 0.6, 
-            damage: 2,
-            shape: 'cylinder',
+            color: 0xff0088, // Magenta color
+            size: 0.25, // Large bullet
+            speed: 0.6, // Very fast
+            damage: 2, // Double damage
+            shape: 'cylinder', // Cylindrical shape
             emissiveIntensity: 0.6,
-            trail: true
+            trail: true // Has trail effect
         },
         plasma: { 
-            color: 0xff00ff, 
-            size: 0.3, 
-            speed: 0.4, 
-            damage: 3,
-            shape: 'octahedron',
+            color: 0xff00ff, // Bright magenta
+            size: 0.3, // Very large
+            speed: 0.4, // Medium speed
+            damage: 3, // Triple damage
+            shape: 'octahedron', // Diamond shape
             emissiveIntensity: 0.8,
             trail: true
         },
         energy: { 
-            color: 0x00ff00, 
-            size: 0.35, 
-            speed: 0.5, 
-            damage: 4,
-            shape: 'dodecahedron',
-            emissiveIntensity: 1.0,
+            color: 0x00ff00, // Bright green
+            size: 0.35, // Largest bullet
+            speed: 0.5, // Fast speed
+            damage: 4, // Quadruple damage
+            shape: 'dodecahedron', // Complex shape
+            emissiveIntensity: 1.0, // Maximum glow
             trail: true
         }
     };
@@ -2139,40 +2165,46 @@ function restartGame() {
     gameLoop();
 }
 
+// ===========================================
+// MAIN GAME LOOP - Updates all game systems and renders the scene
+// ===========================================
 function gameLoop() {
     try {
+        // Only update game logic if game is not over and not paused
         if (!gameState.gameOver && !gameState.paused) {
-        updatePlayer();
-        updateEnemies();
-        updatePowerUps();
-        updateBullets();
-        updateParticles();
-            updateCombo();
-        updateUI();
-            updateMinimap();
-            updateCamera();
+            // Update all game systems in order
+            updatePlayer(); // Handle player movement and input
+            updateEnemies(); // Move enemies and handle enemy AI
+            updatePowerUps(); // Animate power-ups and handle collection
+            updateBullets(); // Move bullets and handle collisions
+            updateParticles(); // Update explosion and engine effects
+            updateCombo(); // Update combo system
+            updateUI(); // Update HUD display
+            updateMinimap(); // Redraw minimap
+            updateCamera(); // Update camera position
             
-            // Update starfield rotation
+            // Animate starfield rotation for dynamic background
             scene.children.forEach(child => {
                 if (child.userData && child.userData.rotationSpeed) {
                     child.rotation.y += child.userData.rotationSpeed;
                 }
             });
-    }
-    
-    // Update controls
-        if (cameraMode === 'free') {
-    controls.update();
         }
     
-    // Render
-    renderer.render(scene, camera);
+        // Update camera controls if in free mode
+        if (cameraMode === 'free') {
+            controls.update(); // Update orbit controls for mouse interaction
+        }
     
-    // Continue loop
+        // Render the 3D scene to the screen
+        renderer.render(scene, camera);
+    
+        // Schedule the next frame (typically 60 FPS)
         animationId = requestAnimationFrame(gameLoop);
     } catch (error) {
+        // Handle any errors in the game loop
         console.error('Game loop error:', error);
-        // Try to recover by restarting the game loop
+        // Try to recover by restarting the game loop after a short delay
         setTimeout(() => {
             animationId = requestAnimationFrame(gameLoop);
         }, 100);

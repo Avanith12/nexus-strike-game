@@ -1,19 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Basic HTML meta tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXUS STRIKE - Advanced 3D Space Combat</title>
+    
+    <!-- Favicon for browser tab -->
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="shortcut icon" type="image/png" href="favicon.png">
+    
+    <!-- Preconnect to Google Fonts for faster loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Import custom fonts: Orbitron (futuristic) and Rajdhani (clean) -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Z-Index Scale:
-         * 1000+ = Modals, overlays
-         * 100-999 = UI elements, navigation
-         * 10-99 = Interactive elements
+        /* ===========================================
+         * CSS STYLES FOR NEXUS STRIKE GAME
+         * ===========================================
+         * 
+         * Z-Index Scale (layering system):
+         * 1000+ = Modals, overlays, story intro
+         * 100-999 = UI elements, navigation, HUD
+         * 10-99 = Interactive elements, buttons
          * 1-9 = Background elements
          * 0 = Default
          * -1 = Behind content
@@ -32,17 +42,19 @@
             overflow-x: hidden;
         }
 
-        /* Navigation */
+        /* ===========================================
+         * NAVIGATION BAR - Fixed top navigation
+         * =========================================== */
         .navbar {
-            position: fixed;
+            position: fixed; /* Stays at top when scrolling */
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.9); /* Semi-transparent black */
+            backdrop-filter: blur(5px); /* Blur effect behind navbar */
             padding: 15px 0;
-            z-index: 1000;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000; /* High z-index to stay on top */
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1); /* Subtle bottom border */
         }
 
         .nav-container {
@@ -54,16 +66,17 @@
             padding: 0 20px;
         }
 
+        /* Game logo with futuristic gradient text effect */
         .logo {
-            font-family: 'Orbitron', monospace;
+            font-family: 'Orbitron', monospace; /* Futuristic font */
             font-size: 24px;
-            font-weight: 900;
-            background: linear-gradient(45deg, #00ff00, #00ffff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-weight: 900; /* Extra bold */
+            background: linear-gradient(45deg, #00ff00, #00ffff); /* Green to cyan gradient */
+            -webkit-background-clip: text; /* Clip gradient to text */
+            -webkit-text-fill-color: transparent; /* Make text transparent to show gradient */
             background-clip: text;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            text-transform: uppercase; /* All caps */
+            letter-spacing: 2px; /* Spaced out letters */
         }
 
         .nav-buttons {
@@ -116,24 +129,28 @@
             display: block;
         }
 
-        /* Space Shooter Styles */
+        /* ===========================================
+         * GAME CONTAINER - Main 3D game area
+         * =========================================== */
         #spaceShooter {
-            background: linear-gradient(45deg, #0a0a0a, #1a1a2e, #16213e);
+            background: linear-gradient(45deg, #0a0a0a, #1a1a2e, #16213e); /* Space-like background */
         }
 
-        /* Story Intro Styles */
+        /* ===========================================
+         * STORY INTRO - Cinematic game introduction
+         * =========================================== */
         .story-intro {
-            position: fixed;
+            position: fixed; /* Full screen overlay */
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            width: 100vw; /* Full viewport width */
+            height: 100vh; /* Full viewport height */
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%); /* Space-like gradient */
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
-            overflow: hidden;
+            z-index: 2000; /* Above everything else */
+            overflow: hidden; /* Hide any overflow */
         }
 
         .story-content {
@@ -143,16 +160,17 @@
             animation: fadeInUp 1s ease-out;
         }
 
+        /* Main game title with glowing effect */
         .story-content h1 {
-            font-family: 'Orbitron', monospace;
-            font-size: 4.5rem;
-            font-weight: 900;
-            color: #00ffff;
-            text-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff, 0 0 90px #00ffff;
+            font-family: 'Orbitron', monospace; /* Futuristic font */
+            font-size: 4.5rem; /* Large text */
+            font-weight: 900; /* Extra bold */
+            color: #00ffff; /* Cyan color */
+            text-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff, 0 0 90px #00ffff; /* Glowing effect */
             margin-bottom: 40px;
-            animation: glow 2s ease-in-out infinite alternate;
-            letter-spacing: 3px;
-            text-transform: uppercase;
+            animation: glow 2s ease-in-out infinite alternate; /* Pulsing glow animation */
+            letter-spacing: 3px; /* Spaced letters */
+            text-transform: uppercase; /* All caps */
         }
 
         .story-text {
@@ -252,23 +270,26 @@
             pointer-events: auto;
         }
 
+        /* ===========================================
+         * HUD (Heads-Up Display) - Game information overlay
+         * =========================================== */
         #spaceShooter #hud {
-            position: absolute;
+            position: absolute; /* Overlay on top of game */
             top: 20px;
             left: 20px;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.9); /* Semi-transparent black background */
             padding: 10px 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-            font-family: 'Courier New', monospace;
+            border-radius: 12px; /* Rounded corners */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle white border */
+            color: #ffffff; /* White text */
+            font-family: 'Courier New', monospace; /* Monospace font for digital look */
             font-size: 12px;
             font-weight: bold;
             min-width: 100px;
             max-width: 140px;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            z-index: 20;
+            backdrop-filter: blur(8px); /* Blur effect */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Drop shadow */
+            z-index: 20; /* Above game but below modals */
         }
         
         #spaceShooter #hud::before {
@@ -476,17 +497,20 @@
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
         }
 
+        /* ===========================================
+         * MINIMAP - Top-down view of battlefield
+         * =========================================== */
         #spaceShooter #minimap {
-            position: absolute;
+            position: absolute; /* Overlay on top of game */
             top: 20px;
             right: 20px;
             width: 200px;
             height: 200px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #00ffff;
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
-            z-index: 15;
+            background: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+            border: 2px solid #00ffff; /* Cyan border */
+            border-radius: 10px; /* Rounded corners */
+            backdrop-filter: blur(5px); /* Blur effect */
+            z-index: 15; /* Above game elements */
         }
 
         #spaceShooter #minimapCanvas {
@@ -852,24 +876,36 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
+    <!-- ===========================================
+         NAVIGATION BAR - Top navigation menu
+         =========================================== -->
     <nav class="navbar">
         <div class="nav-container">
+            <!-- Game logo/title -->
             <div class="logo">NEXUS STRIKE</div>
-        <div class="nav-buttons">
-            <button class="nav-btn active" onclick="showProject('spaceShooter')">SPACE SHOOTER</button>
-        </div>
+            <!-- Navigation buttons -->
+            <div class="nav-buttons">
+                <button class="nav-btn active" onclick="showProject('spaceShooter')">SPACE SHOOTER</button>
+            </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
+    <!-- ===========================================
+         MAIN CONTENT AREA - Contains all game sections
+         =========================================== -->
     <div class="main-content">
-        <!-- Space Shooter Game -->
+        <!-- ===========================================
+             SPACE SHOOTER GAME SECTION
+             =========================================== -->
         <div id="spaceShooter" class="project-section active">
-            <!-- Story Intro -->
+            <!-- ===========================================
+                 STORY INTRODUCTION - Cinematic intro screen
+                 =========================================== -->
             <div id="storyIntro" class="story-intro">
                 <div class="story-content">
+                    <!-- Main game title -->
                     <h1>NEXUS STRIKE</h1>
+                    <!-- Story text with typewriter effect -->
                     <div class="story-text">
                         <p class="story-line">In the year 2157, humanity has expanded across the galaxy...</p>
                         <p class="story-line">But now, an ancient alien threat has awakened from the depths of space.</p>
@@ -877,12 +913,22 @@
                         <p class="story-line">Navigate through hostile environments, collect power-ups, and survive!</p>
                         <p class="story-line">The fate of humanity rests in your hands...</p>
                     </div>
+                    <!-- Start game button -->
                     <button id="startGameBtn" onclick="startGame()">BEGIN MISSION</button>
                 </div>
             </div>
             
+            <!-- ===========================================
+                 GAME CONTAINER - Main 3D game area
+                 =========================================== -->
             <div id="gameContainer" style="display: none;">
+                <!-- ===========================================
+                     USER INTERFACE OVERLAY - All UI elements
+                     =========================================== -->
                 <div id="ui">
+                    <!-- ===========================================
+                         HUD (Heads-Up Display) - Game stats
+                         =========================================== -->
                     <div id="hud">
                         <div id="score">Score: 0</div>
                         <div id="level">Level: 1</div>
@@ -890,26 +936,35 @@
                         <div id="currentMap">Map: Space Station</div>
                     </div>
                     
+                    <!-- ===========================================
+                         CONTROL BUTTONS - Game controls and options
+                         =========================================== -->
                     <button id="toggleInstructions" onclick="toggleInstructions()">SHOW CONTROLS</button>
                     
-                    <!-- Map Selection Panel -->
+                    <!-- ===========================================
+                         MAP SELECTION PANEL - Choose different environments
+                         =========================================== -->
                     <div id="mapSelection" class="map-panel collapsed">
                         <button id="toggleMapSelection" onclick="toggleMapSelection()">MAPS</button>
                         <div id="mapContent" class="collapsed">
                             <h3>SELECT MAP</h3>
                             <div class="map-options">
+                                <!-- Space Station map -->
                                 <button class="map-btn active" onclick="changeMap('spaceStation')" data-map="spaceStation">
                                     <div class="map-preview space-station"></div>
                                     <span>Space Station</span>
                                 </button>
+                                <!-- Asteroid Field map -->
                                 <button class="map-btn" onclick="changeMap('asteroidField')" data-map="asteroidField">
                                     <div class="map-preview asteroid-field"></div>
                                     <span>Asteroid Field</span>
                                 </button>
+                                <!-- Nebula map -->
                                 <button class="map-btn" onclick="changeMap('nebula')" data-map="nebula">
                                     <div class="map-preview nebula"></div>
                                     <span>Nebula</span>
                                 </button>
+                                <!-- 3D Geometric map -->
                                 <button class="map-btn" onclick="changeMap('geometric')" data-map="geometric">
                                     <div class="map-preview geometric"></div>
                                     <span>3D Geometric</span>
@@ -918,6 +973,9 @@
                         </div>
                     </div>
                     
+                    <!-- ===========================================
+                         GAME OVER SCREEN - End game statistics
+                         =========================================== -->
                     <div id="gameOver">
                         <h2>GAME OVER!</h2>
                         <p>Final Score: <span id="finalScore">0</span></p>
@@ -928,9 +986,13 @@
                         <button onclick="showLeaderboard()">Leaderboard</button>
                     </div>
                     
+                    <!-- ===========================================
+                         INSTRUCTIONS PANEL - Game controls help
+                         =========================================== -->
                     <div id="instructions" class="collapsed">
                         <h3>CONTROLS</h3>
                         
+                        <!-- Movement controls -->
                         <div style="margin-bottom: 12px;">
                             <p><span class="key">WASD</span> Move Ship</p>
                             <p><span class="key">Q/E</span> Up/Down</p>
@@ -938,13 +1000,15 @@
                             <p><span class="key">SHIFT</span> Boost</p>
                         </div>
                         
+                        <!-- Game controls -->
                         <div style="margin-bottom: 12px;">
-                        <p><span class="key">C</span> Camera Mode</p>
-                        <p><span class="key">R</span> Reload</p>
-                        <p><span class="key">P</span> Pause</p>
-                        <p><span class="key">M</span> Music/Sound</p>
+                            <p><span class="key">C</span> Camera Mode</p>
+                            <p><span class="key">R</span> Reload</p>
+                            <p><span class="key">P</span> Pause</p>
+                            <p><span class="key">M</span> Music/Sound</p>
                         </div>
                         
+                        <!-- Game tips -->
                         <div style="border-top: 1px solid rgba(255, 255, 255, 0.2); padding-top: 8px; font-size: 12px; color: rgba(255, 255, 255, 0.8);">
                             <p>• Collect power-ups to enhance your ship</p>
                             <p>• Destroy enemies to level up</p>
@@ -952,47 +1016,68 @@
                         </div>
                     </div>
                     
-                    <!-- Power-up Info Panel -->
+                    <!-- ===========================================
+                         POWER-UP INFO PANEL - Shows available power-ups
+                         =========================================== -->
                     <div id="powerUpInfo" class="power-up-info">
+                        <!-- Health power-up -->
                         <div class="power-up-item">
                             <div class="power-up-icon health"></div>
                             <span>Health</span>
                         </div>
+                        <!-- Weapon power-up -->
                         <div class="power-up-item">
                             <div class="power-up-icon weapon"></div>
                             <span>Weapon</span>
                         </div>
+                        <!-- Boost power-up -->
                         <div class="power-up-item">
                             <div class="power-up-icon boost"></div>
                             <span>Boost</span>
                         </div>
+                        <!-- Shield power-up -->
                         <div class="power-up-item">
                             <div class="power-up-icon shield"></div>
                             <span>Shield</span>
                         </div>
                     </div>
                     
-                <div id="minimap">
-                    <canvas id="minimapCanvas"></canvas>
-                </div>
-                
+                    <!-- ===========================================
+                         MINIMAP - Top-down battlefield view
+                         =========================================== -->
+                    <div id="minimap">
+                        <canvas id="minimapCanvas"></canvas>
+                    </div>
                     
+                    <!-- ===========================================
+                         NOTIFICATION SYSTEM - Temporary messages
+                         =========================================== -->
                     <div id="notification" class="notification"></div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Three.js -->
+    <!-- ===========================================
+         EXTERNAL LIBRARIES - Three.js and dependencies
+         =========================================== -->
+    <!-- Three.js - 3D graphics library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- OrbitControls for mouse interaction -->
+    <!-- OrbitControls - Mouse camera controls -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     
-    <!-- Game Scripts -->
+    <!-- ===========================================
+         GAME SCRIPTS - Main game logic
+         =========================================== -->
     <script src="space-shooter.js"></script>
     
-    <!-- Navigation Script -->
+    <!-- ===========================================
+         NAVIGATION AND UI SCRIPTS - JavaScript functions
+         =========================================== -->
     <script>
+        // ===========================================
+        // PROJECT NAVIGATION - Switch between game sections
+        // ===========================================
         function showProject(projectId) {
             // Hide all project sections
             document.querySelectorAll('.project-section').forEach(section => {
@@ -1016,20 +1101,27 @@
             }
         }
 
+        // ===========================================
+        // GAME INITIALIZATION - Start the game
+        // ===========================================
         function startGame() {
-            // Hide story intro
+            // Hide story intro screen
             document.getElementById('storyIntro').style.display = 'none';
             
             // Show game container
             document.getElementById('gameContainer').style.display = 'block';
             
-            // Initialize the game
+            // Initialize the game if the init function exists
             if (typeof init === 'function') {
                 init();
             }
         }
         
-        // Toggle instructions panel
+        // ===========================================
+        // UI CONTROL FUNCTIONS - Toggle panels and controls
+        // ===========================================
+        
+        // Toggle instructions panel visibility
         function toggleInstructions() {
             const instructions = document.getElementById('instructions');
             const toggleBtn = document.getElementById('toggleInstructions');
@@ -1045,6 +1137,7 @@
             }
         }
 
+        // Toggle map selection panel visibility
         function toggleMapSelection() {
             const mapPanel = document.getElementById('mapSelection');
             const mapContent = document.getElementById('mapContent');
