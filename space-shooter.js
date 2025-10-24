@@ -1542,11 +1542,6 @@ function shootScatter() {
         createBullet(bulletStart, direction, true, bulletType);
     }
     
-    // Show notification with weapon level
-    const levelNames = ['Basic', 'Enhanced', 'Advanced', 'Laser', 'Plasma', 'Energy'];
-    const levelName = levelNames[weaponLevel - 1] || 'Unknown';
-    showNotification(`${levelName} SCATTER SHOT!`, 2000);
-    
     // Play special sound effect
     if (sounds.powerUp) sounds.powerUp();
 }
