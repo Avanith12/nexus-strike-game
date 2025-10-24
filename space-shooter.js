@@ -1510,6 +1510,17 @@ function shootScatter() {
     const bulletStart = player.position.clone();
     bulletStart.y += 1;
     
+    // Get current weapon level for scatter bullets
+    const weaponLevel = gameState.weaponLevel || 1;
+    let bulletType = 'scatter';
+    
+    // Upgrade scatter bullet type based on weapon level
+    if (weaponLevel >= 6) bulletType = 'energy';
+    else if (weaponLevel >= 5) bulletType = 'plasma';
+    else if (weaponLevel >= 4) bulletType = 'laser';
+    else if (weaponLevel >= 3) bulletType = 'spread';
+    else if (weaponLevel >= 2) bulletType = 'rapid';
+    
     // Shoot bullets in 8 directions (every 45 degrees)
     for (let i = 0; i < 8; i++) {
         const angle = (i * Math.PI * 2) / 8; // 0, 45, 90, 135, 180, 225, 270, 315 degrees
@@ -1519,12 +1530,14 @@ function shootScatter() {
             Math.cos(angle) // Z direction
         );
         
-        // Create scatter bullet with special properties
-        createBullet(bulletStart, direction, true, 'scatter');
+        // Create scatter bullet with upgraded properties
+        createBullet(bulletStart, direction, true, bulletType);
     }
     
-    // Show notification
-    showNotification('SCATTER SHOT!', 2000);
+    // Show notification with weapon level
+    const levelNames = ['Basic', 'Enhanced', 'Advanced', 'Laser', 'Plasma', 'Energy'];
+    const levelName = levelNames[weaponLevel - 1] || 'Unknown';
+    showNotification(`${levelName} SCATTER SHOT!`, 2000);
     
     // Play special sound effect
     if (sounds.powerUp) sounds.powerUp();
