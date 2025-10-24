@@ -12,6 +12,11 @@ let cameraTarget = new THREE.Vector3();
 let playerSpeed = 0; // Track player movement speed
 let engineTrail = null; // Engine trail effect
 
+// Red screen flash variables
+let redFlashElement = null;
+let lowHealthFlashActive = false;
+let lowHealthFlashInterval = null;
+
 // Memory management variables
 let animationId = null;
 let gameTimers = [];
@@ -69,6 +74,9 @@ function init() {
     try {
         // Initialize audio context
         initAudio();
+        
+        // Initialize red flash effect
+        initRedFlash();
     
     // Create scene
     scene = new THREE.Scene();
@@ -2506,6 +2514,7 @@ function gameLoop() {
             updateMinimap(); // Redraw minimap
             updateCamera(); // Update camera position
             updateEngineTrail(); // Update engine trail effect
+            updateLowHealthFlash(); // Update low health red flash
             
             // Animate starfield rotation for dynamic background
             scene.children.forEach(child => {
@@ -2770,4 +2779,39 @@ function debugCollisionAreas() {
             sphereMaterial.dispose();
         }, 3000);
     });
+}
+
+// Red screen flash functions
+function initRedFlash() {
+    redFlashElement = document.getElementById('redFlash');
+    if (!redFlashElement) {
+        console.warn('Red flash element not found');
+    }
+}
+
+function updateLowHealthFlash() {
+    if (!redFlashElement) return;
+    
+    const healthPercentage = gameState.health / gameState.maxHealth;
+    const lowHealthThreshold = 0.1; // 10% health
+    
+    if (healthPercentage <= lowHealthThreshold && !lowHealthFlashActive) {
+        // Start pulsing red flash
+        lowHealthFlashActive = true;
+        lowHealthFlashInterval = setInterval(() => {
+            const currentHealthPercentage = gameState.health / gameState.maxHealth;
+            
+            // Stop if health increased above threshold or game over
+            if (currentHealthPercentage > lowHealthThreshold || gameState.gameOver) {
+                clearInterval(lowHealthFlashInterval);
+                lowHealthFlashActive = false;
+                redFlashElement.style.backgroundColor = 'rgba(255, 0, 0, 0)';
+                return;
+            }
+            
+            // Pulsing red flash effect
+            const pulseIntensity = 0.15 + 0.25 * Math.sin(Date.now() * 0.008);
+            redFlashElement.style.backgroundColor = `rgba(255, 0, 0, ${pulseIntensity})`;
+        }, 50);
+    }
 }
