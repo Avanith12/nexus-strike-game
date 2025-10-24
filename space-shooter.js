@@ -2105,19 +2105,26 @@ function addShieldEffect() {
         scene.remove(shieldEffect);
     }
     
-    // Create shield sphere around player
-    const shieldGeometry = new THREE.SphereGeometry(2.5, 16, 16);
+    // Create shield sphere around player with improved visibility
+    const shieldGeometry = new THREE.SphereGeometry(3.0, 32, 32);
     const shieldMaterial = new THREE.MeshPhongMaterial({
-        color: 0x00ffff,
+        color: 0x00ddff,
         transparent: true,
-        opacity: 0.3,
+        opacity: 0.4,
         emissive: 0x00ffff,
-        emissiveIntensity: 0.2,
-        wireframe: true
+        emissiveIntensity: 0.5,
+        side: THREE.DoubleSide,
+        wireframe: false
     });
     
     shieldEffect = new THREE.Mesh(shieldGeometry, shieldMaterial);
     shieldEffect.position.copy(player.position);
+    
+    // Store the shield radius for collision detection
+    shieldEffect.userData.radius = 3.0;
+    shieldEffect.userData.baseOpacity = 0.4;
+    shieldEffect.userData.baseEmissiveIntensity = 0.5;
+    
     scene.add(shieldEffect);
     
 }
@@ -2134,6 +2141,29 @@ function removeShieldEffect() {
         }
         shieldEffect = null;
     }
+}
+
+function shieldHitEffect(hitPosition) {
+    // Make shield flash brighter when hit
+    if (shieldEffect && shieldEffect.material) {
+        // Flash effect
+        shieldEffect.material.opacity = 0.8;
+        shieldEffect.material.emissiveIntensity = 1.5;
+        
+        // Reset after a short time
+        setTimeout(() => {
+            if (shieldEffect && shieldEffect.material) {
+                shieldEffect.material.opacity = shieldEffect.userData.baseOpacity;
+                shieldEffect.material.emissiveIntensity = shieldEffect.userData.baseEmissiveIntensity;
+            }
+        }, 100);
+    }
+    
+    // Create explosion at hit point
+    createExplosion(hitPosition, 0.5);
+    
+    // Play shield hit sound
+    if (sounds.hit) sounds.hit();
 }
 
 function takeDamage(amount) {
@@ -2238,9 +2268,25 @@ function updateBullets() {
         }
     });
     
-    // Update enemy bullets
-    enemyBullets.forEach((bullet, index) => {
-        // Check collision with player BEFORE moving
+    // Update enemy bullets (iterate backwards for safe removal)
+    for (let i = enemyBullets.length - 1; i >= 0; i--) {
+        const bullet = enemyBullets[i];
+        
+        // Check collision with shield FIRST if shield is active
+        if (gameState.invulnerable && shieldEffect) {
+            const shieldRadius = shieldEffect.userData.radius;
+            const distanceToPlayer = bullet.position.distanceTo(player.position);
+            
+            if (distanceToPlayer < shieldRadius) {
+                // Bullet hit the shield! Create explosion and remove bullet
+                shieldHitEffect(bullet.position.clone());
+                scene.remove(bullet);
+                enemyBullets.splice(i, 1);
+                continue; // Skip to next bullet
+            }
+        }
+        
+        // Check collision with player if no shield
         const playerSize = 1.5; // Player collision radius
         const bulletSize = 0.5; // Bullet collision radius
         const playerCollisionDistance = playerSize + bulletSize;
@@ -2248,19 +2294,20 @@ function updateBullets() {
         if (bullet.position.distanceTo(player.position) < playerCollisionDistance && !gameState.invulnerable) {
             // Hit player - remove bullet and take damage
             scene.remove(bullet);
-            enemyBullets.splice(index, 1);
+            enemyBullets.splice(i, 1);
             takeDamage(5);
-        } else {
-            // Only move bullet if it didn't hit player
-            bullet.position.add(bullet.userData.direction.clone().multiplyScalar(bullet.userData.speed));
+            continue; // Skip to next bullet
         }
+        
+        // Move bullet if it didn't hit anything
+        bullet.position.add(bullet.userData.direction.clone().multiplyScalar(bullet.userData.speed));
         
         // Remove bullets that are too far
         if (bullet.position.distanceTo(player.position) > 60) {
             scene.remove(bullet);
-            enemyBullets.splice(index, 1);
+            enemyBullets.splice(i, 1);
         }
-    });
+    }
 }
 
 function updateParticles() {
