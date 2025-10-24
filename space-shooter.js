@@ -2069,6 +2069,9 @@ function collectPowerUp(type) {
             const levelNames = ['Basic', 'Enhanced', 'Advanced', 'Laser', 'Plasma', 'Energy'];
             const levelName = levelNames[gameState.weaponLevel - 1] || 'Unknown';
             showNotification(`Weapon Upgraded: ${levelName} Level ${gameState.weaponLevel}!`, 2000);
+            
+            // Golden screen flash on level up!
+            triggerScreenFlash(255, 215, 0, 0.6, 400); // Gold color (255, 215, 0)
             break;
         case 'boost':
             activateBoost();
@@ -2814,4 +2817,19 @@ function updateLowHealthFlash() {
             redFlashElement.style.backgroundColor = `rgba(255, 0, 0, ${pulseIntensity})`;
         }, 50);
     }
+}
+
+// Trigger a colored screen flash
+function triggerScreenFlash(r, g, b, intensity = 0.5, duration = 300) {
+    if (!redFlashElement) return;
+    
+    // Set flash color and intensity
+    redFlashElement.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${intensity})`;
+    
+    // Fade out after duration
+    setTimeout(() => {
+        if (redFlashElement) {
+            redFlashElement.style.backgroundColor = 'rgba(255, 0, 0, 0)';
+        }
+    }, duration);
 }
