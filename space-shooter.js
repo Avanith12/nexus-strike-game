@@ -9,6 +9,8 @@ let audioContext, sounds = {}, backgroundMusic = null, musicGainNode = null;
 let cameraMode = 'follow'; // 'follow' or 'free'
 let cameraOffset = new THREE.Vector3(0, 8, 15);
 let cameraTarget = new THREE.Vector3();
+let playerSpeed = 0; // Track player movement speed
+let engineTrail = null; // Engine trail effect
 
 // Memory management variables
 let animationId = null;
@@ -337,6 +339,34 @@ function showNotification(message, duration = 3000) {
     }, duration);
 }
 
+// Create engine trail effect
+function createEngineTrail() {
+    const trailGeometry = new THREE.BufferGeometry();
+    const trailMaterial = new THREE.LineBasicMaterial({
+        color: 0xff6600,
+        transparent: true,
+        opacity: 0.8,
+        linewidth: 2
+    });
+    
+    // Create trail points (will be updated dynamically)
+    const trailPoints = [];
+    for (let i = 0; i < 30; i++) {
+        trailPoints.push(new THREE.Vector3(0, 0, 0));
+    }
+    
+    trailGeometry.setFromPoints(trailPoints);
+    engineTrail = new THREE.Line(trailGeometry, trailMaterial);
+    engineTrail.userData = { 
+        points: trailPoints, 
+        currentIndex: 0,
+        lastPosition: new THREE.Vector3(0, 0, 0),
+        isMoving: false
+    };
+    
+    scene.add(engineTrail);
+}
+
 function createEnhancedStarField() {
     // Create multiple layers of stars with nebula effects
     for (let layer = 0; layer < 5; layer++) {
@@ -587,6 +617,9 @@ function createModernPlayer() {
     player = playerGroup;
     player.position.set(0, 0, 0);
     scene.add(player);
+    
+    // Create engine trail effect
+    createEngineTrail();
 }
 
 function createEnhancedPlayer() {
@@ -1755,6 +1788,50 @@ function updateCombo() {
     }
 }
 
+// Update engine trail effect
+function updateEngineTrail() {
+    if (!engineTrail || !player) return;
+    
+    const trailData = engineTrail.userData;
+    const currentPos = player.position.clone();
+    const movement = currentPos.distanceTo(trailData.lastPosition);
+    
+    // Only update trail if player is actually moving
+    if (movement > 0.01) {
+        trailData.isMoving = true;
+        
+        // Add new point at player's rear position
+        const rearPosition = currentPos.clone();
+        rearPosition.z += 1.5; // Behind the ship
+        
+        // Shift all points back and add new one at front
+        for (let i = trailData.points.length - 1; i > 0; i--) {
+            trailData.points[i].copy(trailData.points[i - 1]);
+        }
+        trailData.points[0].copy(rearPosition);
+        
+        // Update geometry
+        engineTrail.geometry.setFromPoints(trailData.points);
+        
+        // Update trail intensity based on speed
+        const intensity = Math.min(1.0, playerSpeed * 15);
+        engineTrail.material.opacity = intensity * 0.9;
+        
+        // Change color based on boost
+        if (gameState.boostActive) {
+            engineTrail.material.color.setHex(0x00ff00); // Green when boosting
+        } else {
+            engineTrail.material.color.setHex(0xff6600); // Orange normally
+        }
+        
+        trailData.lastPosition.copy(currentPos);
+    } else {
+        // Player not moving - fade out trail
+        trailData.isMoving = false;
+        engineTrail.material.opacity *= 0.95; // Fade out slowly
+    }
+}
+
 function updateCamera() {
     if (cameraMode === 'follow' && player) {
         // Smooth camera following
@@ -1793,6 +1870,7 @@ function updatePlayer() {
     if (gameState.gameOver) return;
     
     const speed = gameState.boostActive ? 0.15 : 0.1;
+    const oldPosition = player.position.clone();
     
     // Move player with better controls
     if (keys['KeyW']) player.position.z -= speed;
@@ -1803,6 +1881,10 @@ function updatePlayer() {
     // Add vertical movement (Q and E keys)
     if (keys['KeyQ']) player.position.y += speed;
     if (keys['KeyE']) player.position.y -= speed;
+    
+    // Calculate movement speed for engine effects
+    const movement = player.position.distanceTo(oldPosition);
+    playerSpeed = movement;
     
     // Keep player in bounds
     player.position.x = Math.max(-25, Math.min(25, player.position.x));
@@ -2387,6 +2469,7 @@ function gameLoop() {
             updateUI(); // Update HUD display
             updateMinimap(); // Redraw minimap
             updateCamera(); // Update camera position
+            updateEngineTrail(); // Update engine trail effect
             
             // Animate starfield rotation for dynamic background
             scene.children.forEach(child => {
