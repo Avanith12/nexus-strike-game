@@ -1767,9 +1767,9 @@ function toggleScatterMode() {
     gameState.scatterMode = !gameState.scatterMode;
     
     if (gameState.scatterMode) {
-        showNotification('SCATTER MODE ON - Press SPACE to shoot in all directions!', 3000);
+        showNotification('BURST MODE ACTIVATED - Press SPACE to fire in all directions!', 3000);
     } else {
-        showNotification('SCATTER MODE OFF - Normal shooting restored', 2000);
+        showNotification('BURST MODE DEACTIVATED - Normal firing restored', 2000);
     }
 }
 

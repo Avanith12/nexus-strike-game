@@ -44,7 +44,7 @@ A professional-grade 3D space shooter game built with Three.js, featuring advanc
 - **SHIFT** - Speed boost
 - **MOUSE** - Camera control (free mode)
 - **C** - Toggle camera mode (follow/free)
-- **V** - Toggle scatter shot mode (shoots in all directions)
+- **V** - Toggle Burst Mode (fires in all directions)
 - **P** - Pause game
 - **M** - Toggle sound
 - **R** - Reload weapon
