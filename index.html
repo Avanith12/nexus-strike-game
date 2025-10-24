@@ -195,6 +195,7 @@
         .story-line:nth-child(3) { animation-delay: 4s; }
         .story-line:nth-child(4) { animation-delay: 5.5s; }
         .story-line:nth-child(5) { animation-delay: 7s; }
+        .story-line:nth-child(6) { animation-delay: 8.5s; }
 
         #startGameBtn {
             font-family: 'Orbitron', monospace;
@@ -207,7 +208,7 @@
             color: white;
             cursor: pointer;
             opacity: 0;
-            animation: fadeInUp 1s ease-out 8.5s forwards;
+            animation: fadeInUp 1s ease-out 10s forwards;
             box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
             transition: all 0.3s ease;
             letter-spacing: 2px;
@@ -942,6 +943,7 @@
                         <p class="story-line">As Commander of the NEXUS fleet, you must defend our colonies...</p>
                         <p class="story-line">Navigate through hostile environments, collect power-ups, and survive!</p>
                         <p class="story-line">The fate of humanity rests in your hands...</p>
+                        <p class="story-line" style="color: #00ffff; font-size: 1.2rem; margin-top: 30px;">Game designed by Avanith Kanamarlapudi</p>
                     </div>
                     <!-- Start game button -->
                     <button id="startGameBtn" onclick="startGame()">BEGIN MISSION</button>
