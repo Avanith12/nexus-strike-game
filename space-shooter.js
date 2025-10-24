@@ -2132,56 +2132,73 @@ function takeDamage(amount) {
 function updateBullets() {
     // Update player bullets
     bullets.forEach((bullet, index) => {
-        bullet.position.add(bullet.userData.direction.clone().multiplyScalar(bullet.userData.speed));
+        // Check collision BEFORE moving the bullet
+        let hitEnemy = false;
+        let hitEnemyIndex = -1;
         
-        // Check collision with enemies
         enemies.forEach((enemy, enemyIndex) => {
-            if (bullet.position.distanceTo(enemy.position) < 1) {
-                // Hit! Use bullet damage
-                const damage = bullet.userData.damage || 1;
-                enemy.userData.health -= damage;
-                
-                if (enemy.userData.health <= 0) {
-                    // Enemy destroyed
-                    createExplosion(enemy.position, 1.5);
-                    scene.remove(enemy);
-                    enemies.splice(enemyIndex, 1);
-                    
-                    // Update statistics
-                    gameState.enemiesDestroyed++;
-                    gameState.shotsHit++;
-                    
-                    // Update combo system
-                    const currentTime = Date.now();
-                    if (currentTime - gameState.lastHitTime <= gameState.comboTime) {
-                        gameState.comboMultiplier = Math.min(gameState.comboMultiplier + 0.5, 5.0);
-                    } else {
-                        gameState.comboMultiplier = 1.0;
-                    }
-                    gameState.lastHitTime = currentTime;
-                    
-                    // Score based on enemy type, bullet damage, and combo multiplier
-                    const scores = { basic: 10, fast: 15, heavy: 25, boss: 100 };
-                    const baseScore = (scores[enemy.userData.type] || 10) * damage;
-                    const comboScore = Math.floor(baseScore * gameState.comboMultiplier);
-                    gameState.score += comboScore;
-                    
-                    // Level up
-                    if (gameState.score > gameState.level * 500) {
-                        gameState.level++;
-                    }
-                }
-                
-                // Remove bullet and trail
-                if (bullet.userData.trail) {
-                    scene.remove(bullet.userData.trail);
-                    if (bullet.userData.trail.geometry) bullet.userData.trail.geometry.dispose();
-                    if (bullet.userData.trail.material) bullet.userData.trail.material.dispose();
-                }
-                scene.remove(bullet);
-                bullets.splice(index, 1);
+            // Use MUCH larger collision detection for big ships
+            const enemySize = enemy.userData.type === 'boss' ? 5.0 : 
+                             enemy.userData.type === 'heavy' ? 3.5 : 
+                             enemy.userData.type === 'fast' ? 1.5 : 2.0;
+            const collisionDistance = enemySize + 1.0; // Enemy radius + bullet radius (much larger)
+            
+            if (bullet.position.distanceTo(enemy.position) < collisionDistance) {
+                hitEnemy = true;
+                hitEnemyIndex = enemyIndex;
             }
         });
+        
+        // Only move bullet if it didn't hit anything
+        if (!hitEnemy) {
+            bullet.position.add(bullet.userData.direction.clone().multiplyScalar(bullet.userData.speed));
+        } else {
+            // Handle collision with enemy
+            const enemy = enemies[hitEnemyIndex];
+            // Hit! Use bullet damage
+            const damage = bullet.userData.damage || 1;
+            enemy.userData.health -= damage;
+            
+            if (enemy.userData.health <= 0) {
+                // Enemy destroyed
+                createExplosion(enemy.position, 1.5);
+                scene.remove(enemy);
+                enemies.splice(hitEnemyIndex, 1);
+                
+                // Update statistics
+                gameState.enemiesDestroyed++;
+                gameState.shotsHit++;
+                
+                // Update combo system
+                const currentTime = Date.now();
+                if (currentTime - gameState.lastHitTime <= gameState.comboTime) {
+                    gameState.comboMultiplier = Math.min(gameState.comboMultiplier + 0.5, 5.0);
+                } else {
+                    gameState.comboMultiplier = 1.0;
+                }
+                gameState.lastHitTime = currentTime;
+                
+                // Score based on enemy type, bullet damage, and combo multiplier
+                const scores = { basic: 10, fast: 15, heavy: 25, boss: 100 };
+                const baseScore = (scores[enemy.userData.type] || 10) * damage;
+                const comboScore = Math.floor(baseScore * gameState.comboMultiplier);
+                gameState.score += comboScore;
+                
+                // Level up
+                if (gameState.score > gameState.level * 500) {
+                    gameState.level++;
+                }
+            }
+            
+            // Remove bullet and trail
+            if (bullet.userData.trail) {
+                scene.remove(bullet.userData.trail);
+                if (bullet.userData.trail.geometry) bullet.userData.trail.geometry.dispose();
+                if (bullet.userData.trail.material) bullet.userData.trail.material.dispose();
+            }
+            scene.remove(bullet);
+            bullets.splice(index, 1);
+        }
         
         // Update bullet trail if it exists
         if (bullet.userData.trail) {
@@ -2204,13 +2221,19 @@ function updateBullets() {
     
     // Update enemy bullets
     enemyBullets.forEach((bullet, index) => {
-        bullet.position.add(bullet.userData.direction.clone().multiplyScalar(bullet.userData.speed));
+        // Check collision with player BEFORE moving
+        const playerSize = 1.5; // Player collision radius
+        const bulletSize = 0.5; // Bullet collision radius
+        const playerCollisionDistance = playerSize + bulletSize;
         
-        // Check collision with player
-        if (bullet.position.distanceTo(player.position) < 1 && !gameState.invulnerable) {
+        if (bullet.position.distanceTo(player.position) < playerCollisionDistance && !gameState.invulnerable) {
+            // Hit player - remove bullet and take damage
             scene.remove(bullet);
             enemyBullets.splice(index, 1);
             takeDamage(5);
+        } else {
+            // Only move bullet if it didn't hit player
+            bullet.position.add(bullet.userData.direction.clone().multiplyScalar(bullet.userData.speed));
         }
         
         // Remove bullets that are too far
@@ -2717,3 +2740,34 @@ function cleanupGame() {
 
 // Initialize when DOM is loaded - REMOVED for story intro
 // document.addEventListener('DOMContentLoaded', init);
+
+// Debug function to visualize collision areas
+function debugCollisionAreas() {
+    enemies.forEach((enemy, index) => {
+        const enemySize = enemy.userData.type === 'boss' ? 5.0 : 
+                         enemy.userData.type === 'heavy' ? 3.5 : 
+                         enemy.userData.type === 'fast' ? 1.5 : 2.0;
+        const collisionDistance = enemySize + 1.0;
+        
+        console.log(`Enemy ${index} (${enemy.userData.type}): Size=${enemySize}, Collision=${collisionDistance}`);
+        
+        // Create visual collision sphere
+        const sphereGeometry = new THREE.SphereGeometry(collisionDistance, 16, 16);
+        const sphereMaterial = new THREE.MeshBasicMaterial({
+            color: 0xff0000,
+            transparent: true,
+            opacity: 0.1,
+            wireframe: true
+        });
+        const collisionSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        collisionSphere.position.copy(enemy.position);
+        scene.add(collisionSphere);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            scene.remove(collisionSphere);
+            sphereGeometry.dispose();
+            sphereMaterial.dispose();
+        }, 3000);
+    });
+}
