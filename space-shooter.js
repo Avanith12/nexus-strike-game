@@ -1,78 +1,169 @@
-// 🚀 Advanced 3D Space Shooter Game with Enhanced Features
+// ===========================================
+// NEXUS STRIKE - Advanced 3D Space Shooter Game
+// Built with Three.js and Web Audio API
+// ===========================================
+// 
+// This game demonstrates:
+// - 3D graphics programming with Three.js
+// - Procedural audio generation (100% generated, no audio files!)
+// - Real-time game loop architecture
+// - Advanced particle systems and visual effects
+// - Collision detection and game physics
+// - State management and UI systems
+//
+// Created by: Avanith Kanamarlapudi
+// ===========================================
 
-// Game variables
-let scene, camera, renderer, controls;
-let player, enemies = [], bullets = [], enemyBullets = [], powerUps = [], particles = [], shieldEffect = null;
-let keys = {};
-let minimapCanvas, minimapCtx;
-let audioContext, sounds = {}, backgroundMusic = null, musicGainNode = null;
-let cameraMode = 'follow'; // 'follow' or 'free'
-let cameraOffset = new THREE.Vector3(0, 8, 15);
-let cameraTarget = new THREE.Vector3();
-let playerSpeed = 0; // Track player movement speed
-let engineTrail = null; // Engine trail effect
+// ===========================================
+// THREE.JS SCENE VARIABLES
+// ===========================================
+let scene,        // Three.js scene object - container for all 3D objects
+    camera,       // PerspectiveCamera - defines the viewing angle and perspective
+    renderer,     // WebGLRenderer - handles rendering the 3D scene to the screen
+    controls;     // OrbitControls - allows mouse camera control in free mode
 
-// Red screen flash variables
-let redFlashElement = null;
-let lowHealthFlashActive = false;
-let lowHealthFlashInterval = null;
+// ===========================================
+// GAME OBJECT ARRAYS
+// ===========================================
+let player,              // Player ship (THREE.Group containing all player parts)
+    enemies = [],        // Array of enemy ships currently in the game
+    bullets = [],        // Array of bullets fired by the player
+    enemyBullets = [],   // Array of bullets fired by enemies
+    powerUps = [],       // Array of collectible power-up items
+    particles = [],      // Array of particle effects (explosions, etc.)
+    shieldEffect = null; // Shield visual effect when player is invulnerable
 
-// Memory management variables
-let animationId = null;
-let gameTimers = [];
-let eventListeners = [];
-let currentMusicLevel = 1, musicEnabled = true;
-let musicOscillators = []; // Track active music oscillators
+// ===========================================
+// INPUT SYSTEM
+// ===========================================
+let keys = {}; // Object tracking which keyboard keys are currently pressed
+               // Format: { 'KeyW': true, 'KeyA': false, ... }
+
+// ===========================================
+// MINIMAP SYSTEM (2D Canvas overlay)
+// ===========================================
+let minimapCanvas,  // HTML canvas element for the minimap
+    minimapCtx;     // 2D rendering context for drawing on the minimap
+
+// ===========================================
+// AUDIO SYSTEM (Web Audio API)
+// ===========================================
+let audioContext,        // Web Audio API context - required for all audio operations
+    sounds = {},         // Object storing sound effect functions (shoot, explosion, etc.)
+    backgroundMusic = null,  // Background music oscillator (procedurally generated)
+    musicGainNode = null;    // Gain node to control music volume separately from sound effects
+
+// ===========================================
+// CAMERA SYSTEM
+// ===========================================
+let cameraMode = 'follow';              // Current camera mode: 'follow' (tracks player) or 'free' (mouse control)
+let cameraOffset = new THREE.Vector3(0, 8, 15);  // Camera position offset from player in follow mode
+let cameraTarget = new THREE.Vector3();  // Target position for smooth camera interpolation
+
+// ===========================================
+// VISUAL EFFECTS
+// ===========================================
+let playerSpeed = 0;   // Track player movement speed for engine trail intensity
+let engineTrail = null; // Line geometry showing engine exhaust trail
+
+// ===========================================
+// RED SCREEN FLASH (Damage Feedback)
+// ===========================================
+let redFlashElement = null;         // HTML div element for red screen flash overlay
+let lowHealthFlashActive = false;    // Whether low health warning flash is active
+let lowHealthFlashInterval = null;   // Timer interval for pulsing low health flash
+
+// ===========================================
+// MEMORY MANAGEMENT
+// ===========================================
+let animationId = null;     // requestAnimationFrame ID for cancelling game loop
+let gameTimers = [];        // Array of setTimeout/setInterval IDs for cleanup on restart
+let eventListeners = [];    // Array of event listener objects for proper cleanup
+
+// ===========================================
+// MUSIC SYSTEM VARIABLES
+// ===========================================
+let currentMusicLevel = 1,      // Current musical scale/level (affects tempo and key)
+    musicEnabled = true;        // Whether background music is enabled
+let musicOscillators = [];      // Array tracking active music oscillators for cleanup
+// ===========================================
+// GAME STATE OBJECT
+// Centralized state management - tracks all game variables
+// ===========================================
 let gameState = {
-    score: 0,
-    health: 100,
-    maxHealth: 100,
-    level: 1,
-    weaponType: 'basic',
-    weaponLevel: 1,
-    ammo: Infinity,
-    maxAmmo: Infinity,
-    lastEnemySpawn: 0,
-    lastEnemyShot: 0,
-    lastPowerUpSpawn: 0,
-    gameOver: false,
-    boostActive: false,
-    boostTime: 0,
-    invulnerable: false,
-    invulnerableTime: 0,
-    paused: false,
-    scatterMode: false, // Whether scatter shot mode is active
-    shotsFired: 0,
-    shotsHit: 0,
-    enemiesDestroyed: 0,
-    powerUpsActive: [],
-    bossActive: false,
-    bossHealth: 0,
-    bossMaxHealth: 0,
-    comboMultiplier: 1,
-    lastHitTime: 0,
-    comboTime: 3000
+    // Player Stats
+    score: 0,              // Current score (increases when enemies are destroyed)
+    health: 100,           // Current health (game over at 0)
+    maxHealth: 100,         // Maximum health (for calculating health percentage)
+    
+    // Level System
+    level: 1,              // Current level (affects enemy spawn rate and difficulty)
+    
+    // Weapon System
+    weaponType: 'basic',   // Weapon type (basic, rapid, spread, laser)
+    weaponLevel: 1,        // Weapon upgrade level (1-6, affects bullet damage and appearance)
+    ammo: Infinity,        // Current ammo (currently unlimited)
+    maxAmmo: Infinity,     // Maximum ammo capacity
+    
+    // Spawning Timers (used to control spawn rates)
+    lastEnemySpawn: 0,     // Timestamp of last enemy spawn (Date.now())
+    lastEnemyShot: 0,      // Timestamp of last enemy bullet fired
+    lastPowerUpSpawn: 0,   // Timestamp of last power-up spawned
+    
+    // Game Status Flags
+    gameOver: false,       // Whether the game has ended
+    paused: false,         // Whether the game is paused
+    
+    // Power-Up States
+    boostActive: false,    // Whether speed boost is currently active
+    boostTime: 0,          // Time remaining for speed boost (milliseconds)
+    invulnerable: false,   // Whether player is currently invulnerable (shield active)
+    invulnerableTime: 0,   // Time remaining for invulnerability (milliseconds)
+    scatterMode: false,     // Whether scatter shot mode (fires in all directions) is active
+    powerUpsActive: [],    // Array of currently active power-ups
+    
+    // Statistics
+    shotsFired: 0,         // Total number of bullets fired (for accuracy calculation)
+    shotsHit: 0,           // Number of bullets that hit enemies (for accuracy)
+    enemiesDestroyed: 0,   // Total number of enemies destroyed
+    
+    // Boss System
+    bossActive: false,     // Whether a boss enemy is currently spawned
+    bossHealth: 0,         // Current boss health (if boss is active)
+    bossMaxHealth: 0,      // Maximum boss health
+    
+    // Combo System (multiplier increases score for chaining kills)
+    comboMultiplier: 1,    // Current combo multiplier (1.0 to 5.0)
+    lastHitTime: 0,        // Timestamp of last enemy killed
+    comboTime: 3000        // Time window for combo (milliseconds) - kills within this time chain together
 };
 
-// Enhanced game settings
+// ===========================================
+// GAME SETTINGS CONSTANTS
+// Configuration values that control game behavior
+// ===========================================
 const gameSettings = {
-    enemySpawnRate: 1500,
-    powerUpSpawnRate: 2000,
-    boostDuration: 3000,
-    invulnerableDuration: 2000,
-    maxEnemies: 20,
-    maxPowerUps: 5,
-    bossSpawnLevel: 5,
-    comboWindow: 3000,
-    soundEnabled: true,
-    musicVolume: 0.3,
-    sfxVolume: 0.5
+    enemySpawnRate: 1500,      // Time between enemy spawns (milliseconds) - decreases with level
+    powerUpSpawnRate: 2000,    // Time between power-up spawns (milliseconds)
+    boostDuration: 3000,       // How long speed boost lasts (milliseconds)
+    invulnerableDuration: 2000, // How long shield/invulnerability lasts (milliseconds)
+    maxEnemies: 20,            // Maximum number of enemies allowed on screen at once
+    maxPowerUps: 5,            // Maximum number of power-ups allowed on screen at once
+    bossSpawnLevel: 5,         // Level at which boss enemies start spawning
+    comboWindow: 3000,         // Time window for combo multiplier (milliseconds)
+    soundEnabled: true,       // Whether sound effects are enabled
+    musicVolume: 0.3,         // Background music volume (0.0 to 1.0)
+    sfxVolume: 0.5            // Sound effects volume (0.0 to 1.0)
 };
 
-// Initialize the game
+// ===========================================
+// INITIALIZATION FUNCTION
+// Sets up the entire game: scene, camera, renderer, lighting, player, etc.
+// Called once when the game starts
+// ===========================================
 function init() {
     try {
-        // Display creator signature in console
+        // Display creator signature in browser console (for debugging/credits)
         console.log('%c' + 
         ' █████╗ ██╗   ██╗ █████╗ ███╗   ██╗██╗████████╗██╗  ██╗    ██╗  ██╗\n' +
         '██╔══██╗██║   ██║██╔══██╗████╗  ██║██║╚══██╔══╝██║  ██║    ██║ ██╔╝\n' +
@@ -85,34 +176,34 @@ function init() {
         console.log('%c Game designed by Avanith Kanamarlapudi', 'color: #ffaa00; font-size: 12px; font-style: italic;');
         console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #00ffff;');
         
-        // Initialize audio context
+        // STEP 1: Initialize audio system (Web Audio API for procedural sounds)
         initAudio();
         
-        // Initialize red flash effect
+        // STEP 2: Initialize red flash effect for damage feedback
         initRedFlash();
     
-    // Create scene
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000011);
-    scene.fog = new THREE.Fog(0x000011, 50, 200);
-    
-    // Add enhanced starfield
-    createEnhancedStarField();
-    
-    // Create camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 8, 15);
+        // STEP 3: Create Three.js scene (container for all 3D objects)
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000011);  // Dark blue space background
+        scene.fog = new THREE.Fog(0x000011, 50, 200);  // Fog effect for depth perception
         
-        // Create renderer with advanced settings
+        // STEP 4: Create procedural starfield background (15,000+ stars in 5 layers)
+        createEnhancedStarField();
+        
+        // STEP 5: Create perspective camera (75° field of view)
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 8, 15);  // Initial camera position (behind and above player)
+        
+        // STEP 6: Create WebGL renderer with advanced graphics settings
         renderer = new THREE.WebGLRenderer({ 
-            antialias: true,
-            powerPreference: 'high-performance'
+            antialias: true,              // Smooth edges on 3D objects
+            powerPreference: 'high-performance'  // Request high-performance GPU
         });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.2;
+        renderer.setSize(window.innerWidth, window.innerHeight);  // Full screen size
+        renderer.shadowMap.enabled = true;                        // Enable real-time shadows
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;         // Soft shadow edges
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;       // Professional color grading
+        renderer.toneMappingExposure = 1.2;                       // Brightness adjustment
     
     // Add renderer to container
         const gameContainer = document.getElementById('gameContainer');
@@ -160,55 +251,89 @@ function init() {
     }
 }
 
-// Initialize audio system
+// ===========================================
+// AUDIO INITIALIZATION
+// Sets up Web Audio API for procedural sound generation
+// ALL SOUNDS ARE GENERATED IN REAL-TIME - NO AUDIO FILES!
+// ===========================================
 function initAudio() {
     try {
+        // Create Web Audio API context (required for all audio operations)
+        // Uses webkitAudioContext for older browsers
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         
-        // Create gain node for background music
+        // Create separate gain node for background music (allows independent volume control)
         musicGainNode = audioContext.createGain();
-        musicGainNode.connect(audioContext.destination);
-        musicGainNode.gain.value = 0.2; // Background music volume
+        musicGainNode.connect(audioContext.destination);  // Connect to speakers
+        musicGainNode.gain.value = 0.2;  // Background music volume (20%)
         
-        // Create sound effects using Web Audio API
-        sounds.shoot = createTone(800, 0.1, 'sine');
-        sounds.explosion = createTone(200, 0.3, 'sawtooth');
-        sounds.powerUp = createTone(1000, 0.2, 'square');
-        sounds.hit = createTone(400, 0.15, 'triangle');
-        sounds.levelUp = createTone(600, 0.5, 'sine');
+        // ========================================
+        // CREATE SOUND EFFECT FUNCTIONS
+        // Each function generates a sound using oscillators when called
+        // Format: createTone(frequency, duration, waveType)
+        // ========================================
+        sounds.shoot = createTone(800, 0.1, 'sine');        // High-pitched shooting sound
+        sounds.explosion = createTone(200, 0.3, 'sawtooth'); // Low rumbling explosion
+        sounds.powerUp = createTone(1000, 0.2, 'square');    // Ascending power-up sound
+        sounds.hit = createTone(400, 0.15, 'triangle');      // Medium hit sound
+        sounds.levelUp = createTone(600, 0.5, 'sine');       // Extended level-up fanfare
         
-        // Start background music
+        // Start procedurally generated background music (adapts to game level)
         startBackgroundMusic();
         
     } catch (e) {
+        // If audio initialization fails (browser doesn't support Web Audio API), disable sound
+        console.warn('Audio initialization failed:', e);
         gameSettings.soundEnabled = false;
     }
 }
 
-// Create simple tone generator
+// ===========================================
+// TONE GENERATOR FUNCTION
+// Creates a function that generates a sound effect when called
+// This is how we create ALL sounds without using audio files!
+//
+// Parameters:
+//   frequency: Pitch of the sound in Hz (higher = higher pitch)
+//   duration: How long the sound lasts in seconds
+//   type: Waveform type ('sine', 'square', 'sawtooth', 'triangle')
+// ===========================================
 function createTone(frequency, duration, type = 'sine') {
+    // Return a function that generates the sound when called
     return function() {
+        // Skip if sound is disabled or audio context doesn't exist
         if (!gameSettings.soundEnabled || !audioContext) return;
         
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+        // Create oscillator (generates sound wave) and gain node (controls volume)
+        const oscillator = audioContext.createOscillator();  // Generates the sound wave
+        const gainNode = audioContext.createGain();          // Controls volume envelope
         
+        // Connect: Oscillator -> Gain Node -> Speakers
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
         
-        oscillator.frequency.value = frequency;
-        oscillator.type = type;
+        // Set sound properties
+        oscillator.frequency.value = frequency;  // Pitch (Hz)
+        oscillator.type = type;                  // Waveform shape (affects timbre)
         
-        gainNode.gain.setValueAtTime(gameSettings.sfxVolume, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+        // Create volume envelope (fade out to prevent clicking)
+        const currentTime = audioContext.currentTime;
+        gainNode.gain.setValueAtTime(gameSettings.sfxVolume, currentTime);  // Start at full volume
+        gainNode.gain.exponentialRampToValueAtTime(0.01, currentTime + duration);  // Fade out
         
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + duration);
+        // Start and stop the sound
+        oscillator.start(currentTime);
+        oscillator.stop(currentTime + duration);
     };
 }
 
-// Create procedural background music
+// ===========================================
+// PROCEDURAL BACKGROUND MUSIC
+// Generates music in real-time using musical scales and algorithms
+// Music adapts to game level - tempo and scale change dynamically!
+// ===========================================
 function startBackgroundMusic() {
+    // Skip if audio context doesn't exist or music is disabled
     if (!audioContext || !musicEnabled) return;
     
     const playNote = (frequency, duration, startTime) => {
@@ -2555,26 +2680,32 @@ function restartGame() {
 }
 
 // ===========================================
-// MAIN GAME LOOP - Updates all game systems and renders the scene
+// MAIN GAME LOOP
+// This function runs continuously at 60 FPS (60 times per second)
+// It updates all game systems and renders the 3D scene
 // ===========================================
 function gameLoop() {
     try {
-        // Only update game logic if game is not over and not paused
+        // ====================================
+        // GAME LOGIC UPDATE PHASE
+        // Only update if game is active (not over and not paused)
+        // ====================================
         if (!gameState.gameOver && !gameState.paused) {
-            // Update all game systems in order
-            updatePlayer(); // Handle player movement and input
-            updateEnemies(); // Move enemies and handle enemy AI
-            updatePowerUps(); // Animate power-ups and handle collection
-            updateBullets(); // Move bullets and handle collisions
-            updateParticles(); // Update explosion and engine effects
-            updateCombo(); // Update combo system
-            updateUI(); // Update HUD display
-            updateMinimap(); // Redraw minimap
-            updateCamera(); // Update camera position
-            updateEngineTrail(); // Update engine trail effect
-            updateLowHealthFlash(); // Update low health red flash
+            // Update game systems in this order (important for dependencies):
             
-            // Animate starfield rotation for dynamic background
+            updatePlayer();        // 1. Handle keyboard input and move player ship
+            updateEnemies();       // 2. Move enemies toward player, handle enemy AI and shooting
+            updatePowerUps();      // 3. Animate power-ups (rotation, bobbing) and check collection
+            updateBullets();       // 4. Move all bullets, check collisions with enemies/player
+            updateParticles();     // 5. Update explosion particles and engine exhaust effects
+            updateCombo();         // 6. Update combo multiplier (decreases if no recent kills)
+            updateUI();            // 7. Update HUD (score, health, level display)
+            updateMinimap();       // 8. Redraw 2D minimap showing player, enemies, power-ups
+            updateCamera();        // 9. Smoothly move camera to follow player (in follow mode)
+            updateEngineTrail();   // 10. Update engine trail visual effect
+            updateLowHealthFlash(); // 11. Flash red screen if health is low
+            
+            // Animate background starfield (slow rotation for dynamic effect)
             scene.children.forEach(child => {
                 if (child.userData && child.userData.rotationSpeed) {
                     child.rotation.y += child.userData.rotationSpeed;
@@ -2582,20 +2713,31 @@ function gameLoop() {
             });
         }
     
-        // Update camera controls if in free mode
+        // ====================================
+        // CAMERA CONTROLS UPDATE
+        // Only update if in free camera mode (mouse control enabled)
+        // ====================================
         if (cameraMode === 'free') {
-            controls.update(); // Update orbit controls for mouse interaction
+            controls.update();  // Update OrbitControls (allows mouse to rotate/pan/zoom camera)
         }
     
-        // Render the 3D scene to the screen
+        // ====================================
+        // RENDERING PHASE
+        // Draw the entire 3D scene to the screen using WebGL
+        // ====================================
         renderer.render(scene, camera);
     
-        // Schedule the next frame (typically 60 FPS)
+        // ====================================
+        // SCHEDULE NEXT FRAME
+        // requestAnimationFrame ensures smooth 60 FPS
+        // Browser automatically calls this function before next repaint
+        // ====================================
         animationId = requestAnimationFrame(gameLoop);
+        
     } catch (error) {
-        // Handle any errors in the game loop
+        // Error handling: If something breaks, log it and try to recover
         console.error('Game loop error:', error);
-        // Try to recover by restarting the game loop after a short delay
+        // Restart game loop after short delay (prevents infinite error loop)
         setTimeout(() => {
             animationId = requestAnimationFrame(gameLoop);
         }, 100);
