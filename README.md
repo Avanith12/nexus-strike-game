@@ -12,23 +12,7 @@ A professional-grade 3D space shooter game built with Three.js, featuring advanc
 
 ## 📊 Presentation
 
-<div align="center">
-
-<iframe 
-  src="https://slides.com/avanith/game/embed" 
-  width="960" 
-  height="540" 
-  scrolling="no" 
-  frameborder="0" 
-  webkitallowfullscreen 
-  mozallowfullscreen 
-  allowfullscreen
-  style="border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 8px; margin: 20px 0;">
-</iframe>
-
-**[View Full Presentation →](https://slides.com/avanith/game)**
-
-</div>
+**[View Project Presentation →](https://slides.com/avanith/game)**
 
 ## 🎮 Play the Game
 
