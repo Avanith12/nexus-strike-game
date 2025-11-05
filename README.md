@@ -10,6 +10,26 @@
 
 A professional-grade 3D space shooter game built with Three.js, featuring advanced graphics, dynamic gameplay, and multiple environments. This project demonstrates proficiency in WebGL programming, 3D mathematics, and modern web development techniques.
 
+## 📊 Presentation
+
+<div align="center">
+
+<iframe 
+  src="https://slides.com/avanith/game/embed" 
+  width="960" 
+  height="540" 
+  scrolling="no" 
+  frameborder="0" 
+  webkitallowfullscreen 
+  mozallowfullscreen 
+  allowfullscreen
+  style="border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 8px; margin: 20px 0;">
+</iframe>
+
+**[View Full Presentation →](https://slides.com/avanith/game)**
+
+</div>
+
 ## 🎮 Play the Game
 
 **[PLAY NEXUS STRIKE NOW](https://avanith12.github.io/nexus-strike-game/)**
