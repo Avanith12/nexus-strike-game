@@ -289,6 +289,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <div align="center">
   <p>Star this repository if you found it helpful!</p>
   <p>Made with Three.js and modern web technologies</p>
-  <p>Made with Three.js and modern web technologies</p>
+  <p>Enjoy :)</p>
   
 </div>
