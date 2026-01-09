@@ -10,7 +10,7 @@
 
 A professional-grade 3D space shooter game built with Three.js, featuring advanced graphics, dynamic gameplay, and multiple environments. This project demonstrates proficiency in WebGL programming, 3D mathematics, and modern web development techniques.
 
-## 📊 Presentation
+##  Presentation
 
 **[View Project Presentation →](https://slides.com/avanith/game)**
 
