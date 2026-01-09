@@ -112,7 +112,7 @@ A professional-grade 3D space shooter game built with Three.js, featuring advanc
 
 ## Development Status
 
-🚧 **This project is actively under development!** 
+**This project is actively under development!** 
 
 I'm continuously working on adding new features, improving gameplay, and enhancing the overall experience. Some upcoming features I'm planning include:
 
