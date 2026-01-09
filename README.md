@@ -282,7 +282,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-**Avanith Kanamarlapudi** - [GitHub](https://github.com/Avanith12)
+**Avanith Kanamarlapudi** - [email](kanamarlapudi.avanith@gmail.com)
 
 ---
 
