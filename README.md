@@ -124,7 +124,7 @@ I'm continuously working on adding new features, improving gameplay, and enhanci
 - **Performance optimizations** for better gameplay
 - **Mobile support** for touch controls
 
-**Stay tuned for updates!** ⭐
+**Stay tuned for updates!** 
 
 ## Quick Start
 
