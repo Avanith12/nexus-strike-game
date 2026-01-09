@@ -14,7 +14,7 @@ A professional-grade 3D space shooter game built with Three.js, featuring advanc
 
 **[View Project Presentation →](https://slides.com/avanith/game)**
 
-## 🎮 Play the Game
+## Play the Game
 
 **[PLAY NEXUS STRIKE NOW](https://avanith12.github.io/nexus-strike-game/)**
 
