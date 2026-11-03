@@ -2,7 +2,6 @@
 
 A 3D space shooter built with Three.js. Fight through four environments, collect power-ups, and climb the leaderboard.
 
-## Screenshots
 
 ### Starting screen
 
