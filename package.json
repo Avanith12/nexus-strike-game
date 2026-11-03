@@ -8,8 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "serve": "python3 -m http.server 8000",
-    "lint": "eslint *.js",
-    "format": "prettier --write *.js *.html *.css"
+    "lint": "eslint js/*.js",
+    "format": "prettier --write js/*.js html/*.html css/*.css"
   },
   "keywords": [
     "threejs",

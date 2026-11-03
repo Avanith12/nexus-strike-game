@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS STRIKE - Advanced 3D Space Combat</title>
+
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="shortcut icon" type="image/png" href="../favicon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+
+            <div class="logo">NEXUS STRIKE</div>
+
+            <div class="nav-buttons">
+                <button class="nav-btn active" onclick="showProject('spaceShooter')">SPACE SHOOTER</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+
+        <div id="spaceShooter" class="project-section active">
+
+            <div id="storyIntro" class="story-intro">
+                <div class="story-content">
+
+                    <h1>NEXUS STRIKE</h1>
+
+                    <div class="story-text">
+                        <p class="story-line">In the year 2157, humanity has expanded across the galaxy...</p>
+                        <p class="story-line">But now, an ancient alien threat has awakened from the depths of space.</p>
+                        <p class="story-line">As Commander of the NEXUS fleet, you must defend our colonies...</p>
+                        <p class="story-line">Navigate through hostile environments, collect power-ups, and survive!</p>
+                        <p class="story-line">The fate of humanity rests in your hands...</p>
+                        <p class="story-line story-credit">Game designed by Avanith Kanamarlapudi</p>
+                    </div>
+
+                    <button id="startGameBtn" onclick="startGame()">BEGIN MISSION</button>
+                </div>
+            </div>
+
+            <div id="gameContainer">
+
+                <div id="redFlash"></div>
+
+                <div id="ui">
+
+                    <div id="hud">
+                        <div id="score">Score: 0</div>
+                        <div id="combo">Combo: 1x</div>
+                        <div id="health">Health: 100</div>
+                        <div id="healthBar">
+                            <div id="healthFill"></div>
+                        </div>
+                        <div id="level">Level: 1</div>
+                        <div id="levelBar">
+                            <div id="levelFill"></div>
+                        </div>
+                        <div id="weaponLevel">Weapon: Basic Lv.1</div>
+                        <div id="currentMap">Map: Space Station</div>
+                    </div>
+
+                    <button id="toggleInstructions" onclick="toggleInstructions()">SHOW CONTROLS</button>
+
+                    <div id="mapSelection" class="map-panel collapsed">
+                        <button id="toggleMapSelection" onclick="toggleMapSelection()">MAPS</button>
+                        <div id="mapContent" class="collapsed">
+                            <h3>SELECT MAP</h3>
+                            <div class="map-options">
+
+                                <button class="map-btn active" onclick="changeMap('spaceStation')" data-map="spaceStation">
+                                    <div class="map-preview space-station"></div>
+                                    <span>Space Station</span>
+                                </button>
+
+                                <button class="map-btn" onclick="changeMap('asteroidField')" data-map="asteroidField">
+                                    <div class="map-preview asteroid-field"></div>
+                                    <span>Asteroid Field</span>
+                                </button>
+
+                                <button class="map-btn" onclick="changeMap('nebula')" data-map="nebula">
+                                    <div class="map-preview nebula"></div>
+                                    <span>Nebula</span>
+                                </button>
+
+                                <button class="map-btn" onclick="changeMap('geometric')" data-map="geometric">
+                                    <div class="map-preview geometric"></div>
+                                    <span>3D Geometric</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="gameOver">
+                        <h2>GAME OVER!</h2>
+                        <p>Final Score: <span id="finalScore">0</span></p>
+                        <p>Level Reached: <span id="finalLevel">1</span></p>
+                        <p>Enemies Destroyed: <span id="enemiesDestroyed">0</span></p>
+                        <p>Accuracy: <span id="accuracy">0%</span></p>
+                        <button onclick="restartGame()">Play Again</button>
+                        <button onclick="showLeaderboard()">Leaderboard</button>
+                    </div>
+
+                    <div id="instructions" class="collapsed">
+                        <h3>CONTROLS</h3>
+
+                        <div class="control-group">
+                            <p><span class="key">WASD</span> Move</p>
+                            <p><span class="key">Q/E</span> Up/Down</p>
+                            <p><span class="key">SPACE</span> Shoot</p>
+                            <p><span class="key">SHIFT</span> Boost</p>
+                        </div>
+
+                        <div class="control-group">
+                            <p><span class="key">C</span> Camera</p>
+                            <p><span class="key">V</span> Scatter</p>
+                            <p><span class="key">P</span> Pause</p>
+                            <p><span class="key">M</span> Sound</p>
+                        </div>
+
+                        <div class="control-tips">
+                            <p>• Collect power-ups</p>
+                            <p>• Destroy enemies</p>
+                            <p>• Camera follows ship</p>
+                        </div>
+                    </div>
+
+                    <div id="powerUpInfo" class="power-up-info">
+
+                        <div class="power-up-item">
+                            <div class="power-up-icon health"></div>
+                            <span>Health</span>
+                        </div>
+
+                        <div class="power-up-item">
+                            <div class="power-up-icon weapon"></div>
+                            <span>Weapon</span>
+                        </div>
+
+                        <div class="power-up-item">
+                            <div class="power-up-icon boost"></div>
+                            <span>Boost</span>
+                        </div>
+
+                        <div class="power-up-item">
+                            <div class="power-up-icon shield"></div>
+                            <span>Shield</span>
+                        </div>
+                    </div>
+
+                    <div id="minimap">
+                        <canvas id="minimapCanvas"></canvas>
+                    </div>
+
+                    <div id="notification" class="notification"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script src="../js/space-shooter.js"></script>
+
+    <script src="../js/ui.js"></script>
+</body>
+</html>
